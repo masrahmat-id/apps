@@ -89,15 +89,22 @@ jobs:
           }
           EOF
 
-      - name: Konversi icon.webp ke PNG
+      - name: Pasang ikon dari folder icon
         run: |
-          sudo apt-get update
-          sudo apt-get install -y imagemagick
-          mkdir -p assets
-          convert icon.webp -resize 1024x1024 -background none -gravity center -extent 1024x1024 assets/icon-only.png
-
-      - name: Generate ikon Android
-        run: npx @capacitor/assets generate --android --iconBackgroundColor '#ffffff' --iconBackgroundColorDark '#ffffff'
+          RES=android/app/src/main/res
+          rm -rf $RES/mipmap-anydpi-v26
+          put() {
+            mkdir -p "$RES/mipmap-$1"
+            cp "icon/Icon Cherry Purse-$2x$2.png" "$RES/mipmap-$1/ic_launcher.png"
+            cp "icon/Icon Cherry Purse-$2x$2.png" "$RES/mipmap-$1/ic_launcher_round.png"
+            cp "icon/Icon Cherry Purse-$2x$2.png" "$RES/mipmap-$1/ic_launcher_foreground.png"
+          }
+          put ldpi 36
+          put mdpi 48
+          put hdpi 72
+          put xhdpi 96
+          put xxhdpi 144
+          put xxxhdpi 192
 
       - name: Sync
         run: npx cap sync android

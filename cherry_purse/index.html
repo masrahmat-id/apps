@@ -1,0 +1,1344 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#fffafb">
+    <title>Cherry Purse - Catatan Keuangan</title>
+    <!-- Google Fonts: Pacifico untuk judul tulisan tangan manis & Quicksand untuk font bulat yang cute -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Palet Warna Feminin Elegan: Putih Pearl, Blush Rose & Lavender Lembut */
+        :root {
+            --bg-main: #fffafb;
+            --card-bg: rgba(255, 255, 255, 0.88);
+            --card-border: rgba(244, 114, 182, 0.16);
+            --text-main: #3b2d38;
+            --text-muted: #8c7a86;
+            --income: #10b981;
+            --income-bg: #ecfdf5;
+            --expense: #ec4899;
+            --expense-bg: #fdf2f8;
+            --accent: #db2777;
+            --input-bg: #fdf6f8;
+            --shadow-soft: 0 12px 32px rgba(219, 39, 119, 0.06);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Quicksand', -apple-system, BlinkMacSystemFont, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            min-height: 100vh;
+            min-height: 100dvh;
+            overflow-x: hidden;
+            position: relative;
+            padding-bottom: 90px;
+        }
+
+        /* Latar Belakang Aurora Pastel Feminin */
+        .aurora-bg {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            z-index: -1;
+            overflow: hidden;
+            background: linear-gradient(180deg, #fff9fb 0%, #fdf4f7 100%);
+        }
+
+        .aurora-blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(85px);
+            opacity: 0.45;
+            animation: float 12s infinite alternate ease-in-out;
+        }
+
+        .blob-1 {
+            width: 320px; height: 320px;
+            background: #fbcfe8; /* Soft Blush Pink */
+            top: -60px; left: -80px;
+        }
+
+        .blob-2 {
+            width: 340px; height: 340px;
+            background: #e9d5ff; /* Soft Lavender */
+            top: 18%; right: -110px;
+            animation-delay: -4s;
+        }
+
+        .blob-3 {
+            width: 300px; height: 300px;
+            background: #fed7aa; /* Warm Peach Champagne */
+            bottom: -60px; left: 5%;
+            animation-delay: -7s;
+        }
+
+        @keyframes float {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(20px, 30px) scale(1.12); }
+        }
+
+        .container {
+            max-width: 480px;
+            margin: 0 auto;
+            padding: 0 18px 24px 18px;
+        }
+
+        /* Header dengan Tipografi Editorial Cantik (Sticky agar tidak ikut naik saat scroll) */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 950;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 18px 18px 14px 18px;
+            margin: 0 -18px 12px -18px;
+            background: rgba(255, 250, 251, 0.85);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border-bottom: 1px solid rgba(244, 114, 182, 0.12);
+        }
+
+        .brand-wrap {
+            display: flex;
+            flex-direction: column;
+        }
+
+        header h1 {
+            font-family: 'Pacifico', cursive;
+            font-size: 1.65rem;
+            font-weight: 400;
+            letter-spacing: 0.3px;
+            background: linear-gradient(120deg, #ec4899, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 2px 0;
+        }
+
+        .brand-subtitle {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            letter-spacing: 0.3px;
+            margin-top: 2px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .icon-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            color: var(--accent);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            backdrop-filter: blur(14px);
+            box-shadow: 0 4px 12px rgba(219, 39, 119, 0.08);
+            transition: all 0.25s ease;
+        }
+
+        .icon-btn:active {
+            background: #fce7f3;
+            transform: scale(0.92) rotate(25deg);
+        }
+
+        /* Kartu Saldo Utama Bergaya Pearl & Rose Gold */
+        .balance-card {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.96) 0%, rgba(253, 242, 248, 0.9) 100%);
+            border: 1.5px solid #ffffff;
+            border-radius: 28px;
+            padding: 24px;
+            backdrop-filter: blur(20px);
+            margin-bottom: 22px;
+            box-shadow: var(--shadow-soft), inset 0 0 0 1px rgba(244, 114, 182, 0.12);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .balance-card::after {
+            content: '♡';
+            position: absolute;
+            top: 16px;
+            right: 22px;
+            font-size: 1.25rem;
+            color: var(--expense);
+            opacity: 0.25;
+        }
+
+        .balance-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .balance-label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .balance-amount {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 20px;
+            letter-spacing: -0.5px;
+        }
+
+        /* Layout Sisa Saldo Mengambang Bergradien Tepat di Bawah Header Saat Di-scroll */
+        .floating-balance-bar {
+            position: fixed;
+            top: 90px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-22px);
+            width: calc(100% - 36px);
+            max-width: 444px;
+            z-index: 900;
+            background: linear-gradient(120deg, rgba(255, 255, 255, 0.94), rgba(252, 231, 243, 0.96), rgba(243, 232, 255, 0.96));
+            border: 1.5px solid rgba(255, 255, 255, 0.98);
+            border-radius: 999px;
+            padding: 10px 18px;
+            box-shadow: 0 12px 28px rgba(219, 39, 119, 0.14), inset 0 0 0 1px rgba(244, 114, 182, 0.18);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.25s ease;
+        }
+
+        .floating-balance-bar.visible {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .floating-balance-label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: #9d174d;
+        }
+
+        .floating-balance-amount {
+            font-size: 1rem;
+            font-weight: 700;
+            background: linear-gradient(120deg, #be185d, #7e22ce);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.3px;
+        }
+
+        .summary-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(244, 114, 182, 0.14);
+        }
+
+        .summary-item span {
+            display: block;
+            font-size: 0.76rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .summary-item strong {
+            font-size: 1rem;
+            font-weight: 700;
+        }
+
+        .text-in { color: var(--income); }
+        .text-out { color: var(--expense); }
+
+        /* Form Input Bergaya Cantik & Nyaman */
+        .form-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            padding: 18px;
+            backdrop-filter: blur(16px);
+            margin-bottom: 24px;
+            box-shadow: var(--shadow-soft);
+        }
+
+        .type-toggle {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            background: #fdf2f8;
+            padding: 4px;
+            border-radius: 50px;
+            margin-bottom: 14px;
+            border: 1px solid rgba(244, 114, 182, 0.12);
+        }
+
+        .type-btn {
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            padding: 10px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 0.88rem;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .type-btn.active-in {
+            background: #ffffff;
+            color: var(--income);
+            box-shadow: 0 3px 10px rgba(16, 185, 129, 0.14);
+        }
+
+        .type-btn.active-out {
+            background: #ffffff;
+            color: var(--expense);
+            box-shadow: 0 3px 10px rgba(236, 72, 153, 0.14);
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        input, select {
+            width: 100%;
+            background: var(--input-bg);
+            border: 1px solid rgba(244, 114, 182, 0.2);
+            color: var(--text-main);
+            padding: 12px 15px;
+            border-radius: 16px;
+            font-size: 0.92rem;
+            font-weight: 500;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        input:focus, select:focus {
+            background: #ffffff;
+            border-color: var(--expense);
+            box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.1);
+        }
+
+        input::placeholder { color: #b5a3b0; }
+        select option { background: #ffffff; color: #3b2d38; }
+
+        .row-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .submit-btn {
+            margin-top: 12px;
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: #ffffff;
+            background: linear-gradient(120deg, #f472b6, #ec4899, #a855f7);
+            box-shadow: 0 8px 20px rgba(236, 72, 153, 0.25);
+            cursor: pointer;
+            transition: transform 0.15s ease, box-shadow 0.2s ease;
+        }
+
+        .submit-btn:active {
+            transform: scale(0.98);
+            box-shadow: 0 4px 12px rgba(236, 72, 153, 0.2);
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+        }
+
+        .history-header h2 {
+            font-family: 'Pacifico', cursive;
+            font-size: 1.25rem;
+            font-weight: 400;
+            color: var(--text-main);
+        }
+
+        .filter-month {
+            width: auto;
+            padding: 7px 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            border-radius: 50px;
+            background: #ffffff;
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+        }
+
+        .tx-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .tx-item {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 4px 14px rgba(219, 39, 119, 0.04);
+            transition: transform 0.15s ease;
+        }
+
+        .tx-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 0;
+        }
+
+        .tx-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.15rem;
+            flex-shrink: 0;
+        }
+
+        .gemini-spark {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            vertical-align: middle;
+            flex-shrink: 0;
+        }
+
+        .tx-icon.in {
+            background: var(--income-bg);
+        }
+
+        .tx-icon.out {
+            background: var(--expense-bg);
+        }
+
+        .tx-info h4 {
+            font-size: 0.92rem;
+            font-weight: 600;
+            color: var(--text-main);
+            margin-bottom: 3px;
+        }
+
+        .tx-note {
+            font-weight: 400;
+            color: var(--text-muted);
+        }
+
+        .tx-info p {
+            font-size: 0.74rem;
+            color: var(--text-muted);
+        }
+
+        .tx-right {
+            text-align: right;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .tx-amount {
+            font-weight: 700;
+            font-size: 0.92rem;
+        }
+
+        .del-btn {
+            background: #fdf2f8;
+            border: 1px solid rgba(236, 72, 153, 0.15);
+            color: var(--expense);
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            font-size: 0.78rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .del-btn:active {
+            background: #fce7f3;
+            transform: scale(0.9);
+        }
+
+        .empty-state {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            padding: 36px 16px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 20px;
+            border: 1px dashed rgba(244, 114, 182, 0.25);
+        }
+
+        /* Pagination Riwayat Transaksi */
+        .pagination-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            margin-top: 14px;
+            padding: 10px 14px;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 50px;
+            backdrop-filter: blur(14px);
+            box-shadow: 0 6px 18px rgba(219, 39, 119, 0.05);
+        }
+
+        .page-btn {
+            border: 1px solid rgba(236, 72, 153, 0.2);
+            background: #fdf2f8;
+            color: #be185d;
+            font-weight: 700;
+            font-size: 0.8rem;
+            padding: 7px 14px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .page-btn:hover:not(:disabled) {
+            background: #fce7f3;
+        }
+
+        .page-btn:active:not(:disabled) {
+            transform: scale(0.95);
+        }
+
+        .page-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .page-info {
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: var(--text-main);
+            text-align: center;
+        }
+
+        /* Notifikasi Toast & Modal Konfirmasi Custom */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: linear-gradient(120deg, #831843, #581c87);
+            color: #ffffff;
+            padding: 12px 22px;
+            border-radius: 50px;
+            font-size: 0.84rem;
+            font-weight: 500;
+            box-shadow: 0 10px 25px rgba(131, 24, 67, 0.25);
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 1000;
+            text-align: center;
+            max-width: 90%;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(59, 45, 56, 0.35);
+            backdrop-filter: blur(6px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1001;
+            padding: 16px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-box {
+            background: #ffffff;
+            border-radius: 26px;
+            padding: 24px;
+            width: 100%;
+            max-width: 340px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 45px rgba(219, 39, 119, 0.15);
+            text-align: center;
+            border: 1px solid var(--card-border);
+        }
+
+        .modal-box h3 {
+            font-family: 'Pacifico', cursive;
+            font-size: 1.25rem;
+            font-weight: 400;
+            margin-bottom: 14px;
+            color: #be185d;
+        }
+
+        .modal-box p {
+            font-size: 0.84rem;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+
+        .modal-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .modal-btn {
+            padding: 11px;
+            border-radius: 50px;
+            border: none;
+            font-weight: 600;
+            font-size: 0.88rem;
+            cursor: pointer;
+        }
+
+        .modal-cancel {
+            background: #fdf6f8;
+            color: var(--text-main);
+        }
+
+        .modal-confirm {
+            background: linear-gradient(120deg, #ec4899, #db2777);
+            color: #ffffff;
+        }
+
+        .modal-input {
+            margin-bottom: 10px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .settings-section {
+            margin-bottom: 16px;
+            text-align: left;
+        }
+
+        .settings-label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 8px;
+        }
+
+        .settings-divider {
+            height: 1px;
+            background: rgba(244, 114, 182, 0.2);
+            margin: 16px 0;
+        }
+
+        .download-catatan-btn {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 50px;
+            border: 1px solid rgba(236, 72, 153, 0.25);
+            background: linear-gradient(120deg, #fdf2f8, #f3e8ff);
+            color: #be185d;
+            font-weight: 700;
+            font-size: 0.86rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 12px rgba(219, 39, 119, 0.06);
+            transition: transform 0.15s ease, background 0.2s ease;
+        }
+
+        .download-catatan-btn:active {
+            transform: scale(0.97);
+            background: #fce7f3;
+        }
+
+        .modal-close-btn {
+            width: 100%;
+            margin-top: 14px;
+            padding: 10px;
+            border-radius: 50px;
+            border: none;
+            background: #fdf6f8;
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 0.84rem;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Latar belakang aurora pastel feminin -->
+    <div class="aurora-bg">
+        <div class="aurora-blob blob-1"></div>
+        <div class="aurora-blob blob-2"></div>
+        <div class="aurora-blob blob-3"></div>
+    </div>
+
+    <!-- Sisa Saldo Mengambang Bergradien Tepat di Bawah Header Saat Scroll -->
+    <div id="floatingBalanceBar" class="floating-balance-bar" aria-hidden="true">
+        <span class="floating-balance-label">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="#ec4899" stroke="none"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+            Sisa Saldo
+        </span>
+        <strong class="floating-balance-amount" id="floatingBalanceAmount">Rp 0</strong>
+    </div>
+
+    <div class="container">
+        <header id="stickyHeader">
+            <div class="brand-wrap">
+                <h1 id="appTitle">Cherry Purse - Catatan Keuangan</h1>
+                <span class="brand-subtitle" id="appSubtitle">Catatan keuangan</span>
+            </div>
+            <div class="header-actions">
+                <button class="icon-btn" onclick="openSettingsModal()" aria-label="Pengaturan" title="Pengaturan">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <!-- Kartu Saldo -->
+        <div class="balance-card">
+            <div class="balance-top">
+                <div class="balance-label">Sisa Saldo</div>
+            </div>
+            <div class="balance-amount" id="totalBalance">Rp 0</div>
+            <div class="summary-row">
+                <div class="summary-item">
+                    <span style="display:flex;align-items:center;gap:4px;">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>
+                        Pemasukan
+                    </span>
+                    <strong class="text-in" id="totalIncome">Rp 0</strong>
+                </div>
+                <div class="summary-item">
+                    <span style="display:flex;align-items:center;gap:4px;">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ec4899" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 17 13.5 8.5 8.5 13.5 2 7"></polyline><polyline points="16 17 22 17 22 11"></polyline></svg>
+                        Pengeluaran
+                    </span>
+                    <strong class="text-out" id="totalExpense">Rp 0</strong>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Input Transaksi -->
+        <div class="form-card">
+            <div class="type-toggle">
+                <button type="button" class="type-btn active-out" id="btnOut" onclick="setType('expense')">Pengeluaran</button>
+                <button type="button" class="type-btn" id="btnIn" onclick="setType('income')">Pemasukan</button>
+            </div>
+
+            <form id="txForm" class="input-group">
+                <input type="number" id="amount" placeholder="Nominal (contoh: 25000)" required inputmode="numeric">
+                <div class="row-2">
+                    <select id="category" required></select>
+                    <input type="date" id="date" required>
+                </div>
+                <input type="text" id="note" placeholder="Catatan manis (opsional)">
+                <button type="submit" class="submit-btn" style="display:flex;align-items:center;justify-content:center;gap:6px;">
+                    Simpan Catatan
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                </button>
+            </form>
+        </div>
+
+        <!-- Bagian Riwayat Transaksi -->
+        <div class="history-header">
+            <h2>Riwayat Catatan</h2>
+            <input type="month" id="filterMonth" class="filter-month" onchange="onMonthFilterChange()">
+        </div>
+
+        <div class="tx-list" id="txList"></div>
+        <div class="pagination-bar" id="paginationBar" style="display: none;"></div>
+    </div>
+
+    <!-- Komponen Toast & Modal Konfirmasi -->
+    <div id="toast" class="toast"></div>
+
+    <div id="confirmModal" class="modal-overlay" onclick="if(event.target === this) closeModal()">
+        <div class="modal-box">
+            <h3>Hapus Catatan?</h3>
+            <p>Catatan yang dihapus tidak bisa dikembalikan lagi ya ♡</p>
+            <div class="modal-actions">
+                <button class="modal-btn modal-cancel" onclick="closeModal()">Batal</button>
+                <button class="modal-btn modal-confirm" id="confirmDeleteBtn">Hapus</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Komponen Modal Pengaturan Nama Dompet, Catatan Keuangan & Download Catatan -->
+    <div id="settingsModal" class="modal-overlay" onclick="if(event.target === this) closeSettingsModal()">
+        <div class="modal-box">
+            <h3 style="display:flex;align-items:center;justify-content:center;gap:6px;">
+                Pengaturan
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ec4899" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+            </h3>
+            
+            <div class="settings-section">
+                <label class="settings-label" for="ownerNameInput">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ec4899" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 20h9"></path>
+                        <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                    </svg>
+                    Ubah Nama Dompet
+                </label>
+                <input type="text" id="ownerNameInput" class="modal-input" placeholder="Contoh: Dompet Milla">
+
+                <label class="settings-label" for="walletSubtitleInput" style="margin-top: 10px;">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                    </svg>
+                    Edit Catatan Keuangan
+                </label>
+                <input type="text" id="walletSubtitleInput" class="modal-input" placeholder="Contoh: Catatan keuangan">
+
+                <button class="modal-btn modal-confirm" style="width: 100%; margin-top: 4px;" onclick="saveWalletHeaderSettings()">Simpan Perubahan</button>
+            </div>
+
+            <div class="settings-divider"></div>
+
+            <div class="settings-section" style="margin-bottom: 0;">
+                <label class="settings-label">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                    </svg>
+                    Laporan Keuangan (CSV)
+                </label>
+                <button class="download-catatan-btn" onclick="exportCSV()">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                    Download Catatan
+                </button>
+            </div>
+
+            <button class="modal-close-btn" onclick="closeSettingsModal()">Tutup</button>
+        </div>
+    </div>
+
+    <script>
+        let currentType = 'expense';
+        let transactions = [];
+        let deleteTargetId = null;
+        let walletTitle = 'Cherry Purse - Catatan Keuangan';
+        let walletSubtitle = 'Catatan keuangan';
+        let currentPage = 1;
+        const ITEMS_PER_PAGE = 5;
+
+        // Muat data, nama dompet & subtitle dengan penanganan error
+        try {
+            transactions = JSON.parse(localStorage.getItem('aurora_finance_data')) || [];
+            const savedTitle = localStorage.getItem('aurora_wallet_title');
+            if (savedTitle && savedTitle.trim() !== '') {
+                walletTitle = savedTitle.trim();
+            }
+            const savedSubtitle = localStorage.getItem('aurora_wallet_subtitle');
+            if (savedSubtitle && savedSubtitle.trim() !== '') {
+                walletSubtitle = savedSubtitle.trim();
+            }
+        } catch (e) {
+            transactions = [];
+        }
+
+        const heartAccentSVG = `<span class="gemini-spark"><svg width="18" height="18" viewBox="0 0 24 24" fill="#ec4899"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg></span>`;
+
+        function applyWalletTitle() {
+            document.getElementById('appTitle').innerHTML = `${walletTitle} ${heartAccentSVG}`;
+            document.getElementById('appSubtitle').innerText = walletSubtitle;
+            document.title = walletTitle;
+            updateFloatingBalancePosition();
+        }
+
+        // Kategori dilengkapi emoji manis & relevan
+        const categories = {
+            expense: [
+                { name: 'Makan & Minum', icon: '🧋' },
+                { name: 'Skincare & Makeup', icon: '💄' },
+                { name: 'Belanja & Fashion', icon: '🛍️' },
+                { name: 'Transportasi', icon: '🚗' },
+                { name: 'Tagihan', icon: '🧾' },
+                { name: 'Hiburan & Nongkrong', icon: '🎀' },
+                { name: 'Kesehatan', icon: '💊' },
+                { name: 'Lainnya', icon: '🌸' }
+            ],
+            income: [
+                { name: 'Gaji', icon: '💼' },
+                { name: 'Bonus', icon: '✨' },
+                { name: 'Usaha / Freelance', icon: '💻' },
+                { name: 'Uang Saku / Hadiah', icon: '🎁' },
+                { name: 'Investasi', icon: '🌷' },
+                { name: 'Lainnya', icon: '💖' }
+            ]
+        };
+
+        // Peta ikon agar riwayat lama maupun baru tetap tampil cantik
+        const categoryIconMap = {
+            'Makan & Minum': '🧋',
+            'Skincare & Makeup': '💄',
+            'Belanja & Fashion': '🛍️',
+            'Belanja': '🛍️',
+            'Transportasi': '🚗',
+            'Tagihan': '🧾',
+            'Hiburan & Nongkrong': '🎀',
+            'Hiburan': '🎀',
+            'Kesehatan': '💊',
+            'Gaji': '💼',
+            'Bonus': '✨',
+            'Usaha / Freelance': '💻',
+            'Uang Saku / Hadiah': '🎁',
+            'Hadiah': '🎁',
+            'Investasi': '🌷',
+            'Lainnya': '🌸'
+        };
+
+        // Atur tanggal & bulan default hari ini
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        document.getElementById('date').value = `${yyyy}-${mm}-${dd}`;
+        document.getElementById('filterMonth').value = `${yyyy}-${mm}`;
+
+        // Menampilkan notifikasi singkat
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.innerText = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // Ganti tipe transaksi (Pengeluaran / Pemasukan)
+        function setType(type) {
+            currentType = type;
+            document.getElementById('btnOut').className = type === 'expense' ? 'type-btn active-out' : 'type-btn';
+            document.getElementById('btnIn').className = type === 'income' ? 'type-btn active-in' : 'type-btn';
+            updateCategoryOptions();
+        }
+
+        // Perbarui pilihan kategori sesuai tipe
+        function updateCategoryOptions() {
+            const select = document.getElementById('category');
+            select.innerHTML = categories[currentType]
+                .map(cat => `<option value="${cat.name}">${cat.icon} ${cat.name}</option>`)
+                .join('');
+        }
+
+        // Format angka ke Rupiah
+        function formatRupiah(num) {
+            return 'Rp ' + num.toLocaleString('id-ID');
+        }
+
+        function onMonthFilterChange() {
+            currentPage = 1;
+            render();
+        }
+
+        function goToPage(page) {
+            currentPage = page;
+            render();
+            const historyEl = document.querySelector('.history-header');
+            if (historyEl) {
+                const headerHeight = document.getElementById('stickyHeader')?.offsetHeight || 80;
+                const y = historyEl.getBoundingClientRect().top + window.scrollY - headerHeight - 12;
+                window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
+            }
+        }
+
+        // Simpan transaksi baru
+        document.getElementById('txForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const amount = parseFloat(document.getElementById('amount').value);
+            const category = document.getElementById('category').value;
+            const date = document.getElementById('date').value;
+            const note = document.getElementById('note').value.trim();
+
+            if (!amount || amount <= 0) {
+                showToast('Masukkan nominal yang valid ya ✨');
+                return;
+            }
+
+            const newTx = {
+                id: Date.now(),
+                type: currentType,
+                amount,
+                category,
+                date,
+                note
+            };
+
+            transactions.unshift(newTx);
+            saveData();
+            
+            document.getElementById('amount').value = '';
+            document.getElementById('note').value = '';
+            currentPage = 1;
+            render();
+            showToast('Catatan berhasil disimpan ✨');
+        });
+
+        // Buka modal konfirmasi hapus
+        function askDeleteTx(id) {
+            deleteTargetId = id;
+            document.getElementById('confirmModal').classList.add('active');
+        }
+
+        function closeModal() {
+            deleteTargetId = null;
+            document.getElementById('confirmModal').classList.remove('active');
+        }
+
+        document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+            if (deleteTargetId !== null) {
+                transactions = transactions.filter(t => t.id !== deleteTargetId);
+                saveData();
+                render();
+                showToast('Catatan telah dihapus');
+            }
+            closeModal();
+        });
+
+        function saveData() {
+            try {
+                localStorage.setItem('aurora_finance_data', JSON.stringify(transactions));
+            } catch (e) {
+                showToast('Gagal menyimpan ke penyimpanan lokal.');
+            }
+        }
+
+        // Render ringkasan, daftar riwayat & pagination (> 5 item)
+        function render() {
+            const selectedMonth = document.getElementById('filterMonth').value;
+            const listEl = document.getElementById('txList');
+            const paginationEl = document.getElementById('paginationBar');
+
+            // 1. Hitung total saldo keseluruhan lintas bulan
+            let allTimeIncome = 0;
+            let allTimeExpense = 0;
+            transactions.forEach(t => {
+                if (t.type === 'income') allTimeIncome += t.amount;
+                else allTimeExpense += t.amount;
+            });
+            const currentWalletBalance = allTimeIncome - allTimeExpense;
+            document.getElementById('totalBalance').innerText = formatRupiah(currentWalletBalance);
+            document.getElementById('floatingBalanceAmount').innerText = formatRupiah(currentWalletBalance);
+
+            // 2. Hitung pemasukan & pengeluaran khusus bulan yang dipilih
+            const filtered = selectedMonth 
+                ? transactions.filter(t => t.date.startsWith(selectedMonth))
+                : transactions;
+
+            let monthlyIncome = 0;
+            let monthlyExpense = 0;
+
+            filtered.forEach(t => {
+                if (t.type === 'income') monthlyIncome += t.amount;
+                else monthlyExpense += t.amount;
+            });
+
+            document.getElementById('totalIncome').innerText = formatRupiah(monthlyIncome);
+            document.getElementById('totalExpense').innerText = formatRupiah(monthlyExpense);
+
+            if (filtered.length === 0) {
+                listEl.innerHTML = '<div class="empty-state">Belum ada catatan transaksi di bulan ini 🌸</div>';
+                paginationEl.style.display = 'none';
+                paginationEl.innerHTML = '';
+                return;
+            }
+
+            const sortedFiltered = [...filtered].sort((a, b) => {
+                const dateDiff = new Date(b.date) - new Date(a.date);
+                return dateDiff !== 0 ? dateDiff : b.id - a.id;
+            });
+
+            const totalItems = sortedFiltered.length;
+            const shouldPaginate = totalItems > ITEMS_PER_PAGE;
+            const totalPages = shouldPaginate ? Math.ceil(totalItems / ITEMS_PER_PAGE) : 1;
+
+            if (currentPage > totalPages) {
+                currentPage = totalPages;
+            }
+            if (currentPage < 1) {
+                currentPage = 1;
+            }
+
+            const startIndex = shouldPaginate ? (currentPage - 1) * ITEMS_PER_PAGE : 0;
+            const pageItems = shouldPaginate
+                ? sortedFiltered.slice(startIndex, startIndex + ITEMS_PER_PAGE)
+                : sortedFiltered;
+
+            listEl.innerHTML = pageItems.map(t => {
+                const icon = categoryIconMap[t.category] || (t.type === 'income' ? '✨' : '🌸');
+                return `
+                    <div class="tx-item">
+                        <div class="tx-left">
+                            <div class="tx-icon ${t.type === 'income' ? 'in' : 'out'}">${icon}</div>
+                            <div class="tx-info">
+                                <h4>${t.category} ${t.note ? `• <span class="tx-note">${t.note}</span>` : ''}</h4>
+                                <p>${t.date}</p>
+                            </div>
+                        </div>
+                        <div class="tx-right">
+                            <span class="tx-amount ${t.type === 'income' ? 'text-in' : 'text-out'}">
+                                ${t.type === 'income' ? '+' : '-'} ${formatRupiah(t.amount)}
+                            </span>
+                            <button class="del-btn" onclick="askDeleteTx(${t.id})" aria-label="Hapus">✕</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            if (shouldPaginate) {
+                paginationEl.style.display = 'flex';
+                paginationEl.innerHTML = `
+                    <button type="button" class="page-btn" onclick="goToPage(${currentPage - 1})" ${currentPage <= 1 ? 'disabled' : ''}>← Prev</button>
+                    <span class="page-info">Hal ${currentPage} / ${totalPages} (${totalItems})</span>
+                    <button type="button" class="page-btn" onclick="goToPage(${currentPage + 1})" ${currentPage >= totalPages ? 'disabled' : ''}>Next →</button>
+                `;
+            } else {
+                paginationEl.style.display = 'none';
+                paginationEl.innerHTML = '';
+            }
+        }
+
+        // Mode layar penuh otomatis saat klik/tap di mana saja pada layar
+        function triggerAutoFullScreen() {
+            if (!document.fullscreenElement) {
+                const docEl = document.documentElement;
+                if (docEl.requestFullscreen) {
+                    docEl.requestFullscreen().catch(() => {});
+                } else if (docEl.webkitRequestFullscreen) {
+                    docEl.webkitRequestFullscreen();
+                }
+            }
+        }
+
+        document.addEventListener('click', function() {
+            triggerAutoFullScreen();
+        }, { passive: true });
+
+        // Sesuaikan posisi top floating balance agar selalu tepat di bawah header sticky
+        function updateFloatingBalancePosition() {
+            const headerEl = document.getElementById('stickyHeader');
+            const floatingBar = document.getElementById('floatingBalanceBar');
+            if (!headerEl || !floatingBar) return;
+            const headerHeight = headerEl.offsetHeight;
+            floatingBar.style.top = (headerHeight + 10) + 'px';
+        }
+
+        // Tampilkan sisa saldo mengambang bergradien saat kartu saldo utama terlewat scroll di bawah header sticky
+        function updateFloatingBalanceVisibility() {
+            const headerEl = document.getElementById('stickyHeader');
+            const balanceCard = document.querySelector('.balance-card');
+            const floatingBar = document.getElementById('floatingBalanceBar');
+            if (!balanceCard || !floatingBar) return;
+
+            updateFloatingBalancePosition();
+            const headerHeight = headerEl ? headerEl.offsetHeight : 80;
+            const rect = balanceCard.getBoundingClientRect();
+            const shouldFloat = rect.bottom < (headerHeight + 16);
+            floatingBar.classList.toggle('visible', shouldFloat);
+            floatingBar.setAttribute('aria-hidden', String(!shouldFloat));
+        }
+
+        window.addEventListener('scroll', updateFloatingBalanceVisibility, { passive: true });
+        window.addEventListener('resize', updateFloatingBalanceVisibility, { passive: true });
+
+        // Pengaturan Ubah Nama Dompet & Edit Catatan Keuangan
+        function openSettingsModal() {
+            document.getElementById('ownerNameInput').value = walletTitle;
+            document.getElementById('walletSubtitleInput').value = walletSubtitle;
+            document.getElementById('settingsModal').classList.add('active');
+            setTimeout(() => document.getElementById('ownerNameInput').focus(), 100);
+        }
+
+        function closeSettingsModal() {
+            document.getElementById('settingsModal').classList.remove('active');
+        }
+
+        function saveWalletHeaderSettings() {
+            const newName = document.getElementById('ownerNameInput').value.trim();
+            const newSubtitle = document.getElementById('walletSubtitleInput').value.trim();
+            walletTitle = newName !== '' ? newName : 'Cherry Purse - Catatan Keuangan';
+            walletSubtitle = newSubtitle !== '' ? newSubtitle : 'Catatan keuangan';
+            try {
+                localStorage.setItem('aurora_wallet_title', walletTitle);
+                localStorage.setItem('aurora_wallet_subtitle', walletSubtitle);
+            } catch (e) {
+                // Abaikan error penyimpanan
+            }
+            applyWalletTitle();
+            closeSettingsModal();
+            showToast('Pengaturan berhasil disimpan ✨');
+        }
+
+        // Ekspor data ke file CSV dengan kolom terpisah rapi & lebar disesuaikan
+        function exportCSV() {
+            if (transactions.length === 0) {
+                showToast('Belum ada data untuk diunduh.');
+                return;
+            }
+
+            // Urutkan transaksi dari tanggal terlama ke terbaru (dan ID terlama) agar perhitungan sisa saldo kronologis akurat
+            const sortedTx = [...transactions].sort((a, b) => {
+                const dateDiff = new Date(a.date) - new Date(b.date);
+                return dateDiff !== 0 ? dateDiff : a.id - b.id;
+            });
+
+            // Header kolom lengkap ala buku kas
+            const rows = [
+                ['No', 'Tanggal', 'Kategori', 'Catatan', 'Pemasukan', 'Pengeluaran', 'Sisa Saldo']
+            ];
+
+            let runningBalance = 0;
+            let totalIn = 0;
+            let totalOut = 0;
+
+            sortedTx.forEach((t, index) => {
+                const cleanCategory = (t.category || '').replace(/[";\r\n]+/g, ' ').trim();
+                const cleanNote = (t.note || '-').replace(/[";\r\n]+/g, ' ').trim();
+                
+                let inStr = '-';
+                let outStr = '-';
+
+                if (t.type === 'income') {
+                    runningBalance += t.amount;
+                    totalIn += t.amount;
+                    inStr = formatRupiah(t.amount);
+                } else {
+                    runningBalance -= t.amount;
+                    totalOut += t.amount;
+                    outStr = formatRupiah(t.amount);
+                }
+
+                const balStr = runningBalance < 0 
+                    ? '-Rp ' + Math.abs(runningBalance).toLocaleString('id-ID')
+                    : formatRupiah(runningBalance);
+
+                rows.push([
+                    String(index + 1),
+                    t.date,
+                    cleanCategory,
+                    cleanNote,
+                    inStr,
+                    outStr,
+                    balStr
+                ]);
+            });
+
+            // Tambahkan baris ringkasan Total Akhir di bagian bawah tabel
+            const finalBalStr = runningBalance < 0 
+                ? '-Rp ' + Math.abs(runningBalance).toLocaleString('id-ID')
+                : formatRupiah(runningBalance);
+
+            rows.push([
+                '',
+                '',
+                'TOTAL KESELURUHAN',
+                '',
+                formatRupiah(totalIn),
+                formatRupiah(totalOut),
+                finalBalStr
+            ]);
+
+            // Hitung lebar maksimal setiap kolom agar rapi saat dibuka di teks/Excel
+            const colWidths = rows[0].map((_, colIndex) => {
+                return Math.max(...rows.map(row => String(row[colIndex]).length)) + 2;
+            });
+
+            // Susun CSV dengan pemisah titik koma (;) standar Excel Indonesia & padding lebar kolom
+            const csvLines = rows.map((row, rowIndex) => {
+                return row.map((cell, colIndex) => {
+                    const str = String(cell);
+                    // Kolom angka/nominal (No, Pemasukan, Pengeluaran, Sisa Saldo) rata kanan pada baris data & total
+                    if ((colIndex === 0 || colIndex >= 4) && rowIndex > 0) {
+                        return str.padStart(colWidths[colIndex], ' ');
+                    }
+                    return str.padEnd(colWidths[colIndex], ' ');
+                }).join(';');
+            });
+
+            // Tambahkan UTF-8 BOM (\uFEFF) agar Excel mengenali encoding & pemisah kolom dengan sempurna
+            const csvContent = '\uFEFF' + csvLines.join('\r\n');
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            const safeFileName = walletTitle.replace(/[^a-zA-Z0-9_-]/g, '_');
+            link.download = `${safeFileName}_${new Date().toISOString().slice(0,10)}.csv`;
+            link.click();
+            closeSettingsModal();
+            showToast('Download Catatan CSV berhasil ✨');
+        }
+
+        // Inisialisasi awal
+        applyWalletTitle();
+        updateCategoryOptions();
+        render();
+        updateFloatingBalanceVisibility();
+    </script>
+</body>
+</html>

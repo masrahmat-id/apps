@@ -27,11 +27,77 @@ jobs:
           cp index.html www/
           cp icon.webp www/
 
+      - name: Blokir copy dan seleksi teks
+        run: |
+          cat > www/lock.js << 'EOF'
+          var s = document.createElement('style');
+          s.textContent = '*{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}input,textarea{-webkit-user-select:text;user-select:text}';
+          document.head.appendChild(s);
+          document.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+          document.addEventListener('selectstart', function (e) {
+            var t = e.target;
+            if (t && t.closest && t.closest('input,textarea')) return;
+            e.preventDefault();
+          });
+          EOF
+          sed -i 's#</head>#<script src="lock.js"></script></head>#' www/index.html
+
       - name: Install dependency
         run: npm install
 
       - name: Tambah platform Android
         run: npx cap add android
+
+      - name: Aktifkan fullscreen
+        run: |
+          cat > android/app/src/main/java/id/masrahmat/cherrypurse/MainActivity.java << 'EOF'
+          package id.masrahmat.cherrypurse;
+
+          import android.os.Build;
+          import android.os.Bundle;
+          import android.view.WindowManager;
+          import androidx.core.view.WindowCompat;
+          import androidx.core.view.WindowInsetsCompat;
+          import androidx.core.view.WindowInsetsControllerCompat;
+          import com.getcapacitor.BridgeActivity;
+
+          public class MainActivity extends BridgeActivity {
+            @Override
+            public void onCreate(Bundle savedInstanceState) {
+              super.onCreate(savedInstanceState);
+              if (Build.VERSION.SDK_INT >= 28) {
+                getWindow().getAttributes().layoutInDisplayCutoutMode =
+                    WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
+              }
+              hideSystemBars();
+            }
+
+            @Override
+            public void onWindowFocusChanged(boolean hasFocus) {
+              super.onWindowFocusChanged(hasFocus);
+              if (hasFocus) hideSystemBars();
+            }
+
+            private void hideSystemBars() {
+              WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+              WindowInsetsControllerCompat c =
+                  WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
+              c.hide(WindowInsetsCompat.Type.systemBars());
+              c.setSystemBarsBehavior(
+                  WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+            }
+          }
+          EOF
+
+      - name: Konversi icon.webp ke PNG
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y imagemagick
+          mkdir -p assets
+          convert icon.webp -resize 1024x1024 -background none -gravity center -extent 1024x1024 assets/icon-only.png
+
+      - name: Generate ikon Android
+        run: npx @capacitor/assets generate --android --iconBackgroundColor '#ffffff' --iconBackgroundColorDark '#ffffff'
 
       - name: Sync
         run: npx cap sync android

@@ -4,7 +4,7 @@ on:
   push:
     branches: [ main ]
     paths:
-      - 'cherry_purse/**'
+      - 'apps/cherry_purse/**'
       - '.github/workflows/build-cherry-purse.yml'
   workflow_dispatch:
 
@@ -33,18 +33,19 @@ jobs:
       - name: Siapkan Proyek Capacitor & Aset
         run: |
           mkdir -p app_build/www
-          cp -r cherry_purse/* app_build/www/
+          cp -r apps/cherry_purse/* app_build/www/
           cd app_build
           npm init -y
           npm install @capacitor/core@6 @capacitor/cli@6 @capacitor/android@6
-          npx cap init "Cherry Purse" "com.masrahmat.cherrypurse" --web-dir=www
+          npx cap init "Cherry Purse" "com.masrahmat.cherrypurse" --web-dir www --npm-client npm
           npx cap add android
+          npx cap sync android
 
       - name: Atur Ikon Aplikasi dari icon.webp
         run: |
           sudo apt-get update && sudo apt-get install -y webp imagemagick
-          if [ -f "cherry_purse/icon.webp" ]; then
-            dwebp cherry_purse/icon.webp -o icon.png
+          if [ -f "apps/cherry_purse/icon.webp" ]; then
+            dwebp apps/cherry_purse/icon.webp -o icon.png
             for dir in app_build/android/app/src/main/res/mipmap-*; do
               if [ -d "$dir" ]; then
                 convert icon.png -resize 192x192 "$dir/ic_launcher.png"

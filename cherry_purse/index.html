@@ -744,7 +744,7 @@
     <div class="container">
         <header id="stickyHeader">
             <div class="brand-wrap">
-                <h1 id="appTitle">Cherry Purse - Catatan Keuangan</h1>
+                <h1 id="appTitle">Cherry Purse</h1>
                 <span class="brand-subtitle" id="appSubtitle">Catatan keuangan</span>
             </div>
             <div class="header-actions">
@@ -884,7 +884,7 @@
         let currentType = 'expense';
         let transactions = [];
         let deleteTargetId = null;
-        let walletTitle = 'Cherry Purse - Catatan Keuangan';
+        let walletTitle = 'Cherry Purse';
         let walletSubtitle = 'Catatan keuangan';
         let currentPage = 1;
         const ITEMS_PER_PAGE = 5;
@@ -1224,7 +1224,7 @@
         function saveWalletHeaderSettings() {
             const newName = document.getElementById('ownerNameInput').value.trim();
             const newSubtitle = document.getElementById('walletSubtitleInput').value.trim();
-            walletTitle = newName !== '' ? newName : 'Cherry Purse - Catatan Keuangan';
+            walletTitle = newName !== '' ? newName : 'Cherry Purse';
             walletSubtitle = newSubtitle !== '' ? newSubtitle : 'Catatan keuangan';
             try {
                 localStorage.setItem('aurora_wallet_title', walletTitle);

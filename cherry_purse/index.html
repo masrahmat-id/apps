@@ -745,6 +745,171 @@
             font-size: 0.84rem;
             cursor: pointer;
         }
+
+        /* ===== Fullscreen: aman dari poni/kamera & anti-seleksi teks ===== */
+        header {
+            padding-top: calc(18px + env(safe-area-inset-top, 0px));
+        }
+
+        html, body, * {
+            -webkit-user-select: none;
+            user-select: none;
+            -webkit-touch-callout: none;
+        }
+
+        img { -webkit-user-drag: none; }
+
+        /* ===== Keyboard Custom Cherry Purse ===== */
+        :root { --kb-h: 0px; }
+
+        input[data-kb] { cursor: pointer; }
+        input[data-kb].kb-active {
+            background: #ffffff;
+            border-color: var(--expense);
+            box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.12);
+        }
+
+        body.kb-open { padding-bottom: calc(90px + var(--kb-h)); }
+        body.kb-open .modal-overlay { padding-bottom: calc(var(--kb-h) + 16px); }
+        body.kb-open .modal-box { max-height: calc(100dvh - var(--kb-h) - 32px); }
+        body.kb-open .toast { bottom: calc(var(--kb-h) + 16px); }
+
+        .kb-panel {
+            position: fixed;
+            left: 0; right: 0; bottom: 0;
+            z-index: 1100;
+            padding: 10px 8px calc(10px + env(safe-area-inset-bottom, 0px));
+            background:
+                radial-gradient(120% 90% at 0% 0%, rgba(251, 207, 232, 0.75) 0%, rgba(251, 207, 232, 0) 60%),
+                radial-gradient(120% 90% at 100% 100%, rgba(233, 213, 255, 0.85) 0%, rgba(233, 213, 255, 0) 60%),
+                linear-gradient(165deg, #fff4f9 0%, #fbeefe 55%, #ffeaf3 100%);
+            border-top: 1.5px solid rgba(255, 255, 255, 0.95);
+            border-radius: 28px 28px 0 0;
+            box-shadow: 0 -14px 40px rgba(219, 39, 119, 0.18), inset 0 1px 0 rgba(244, 114, 182, 0.2);
+            transform: translateY(105%);
+            visibility: hidden;
+            transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), visibility 0s linear 0.28s;
+            touch-action: none;
+        }
+
+        .kb-panel.open {
+            transform: translateY(0);
+            visibility: visible;
+            transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), visibility 0s;
+        }
+
+        .kb-preview {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 2px 6px 10px;
+        }
+
+        .kb-preview-label {
+            font-family: 'Pacifico', cursive;
+            font-weight: 400;
+            font-size: 0.82rem;
+            background: linear-gradient(120deg, #ec4899, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            max-width: 38%;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            padding: 3px 0;
+        }
+
+        .kb-preview-text {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(244, 114, 182, 0.28);
+            border-radius: 16px;
+            padding: 10px 14px;
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text-main);
+            box-shadow: inset 0 2px 6px rgba(219, 39, 119, 0.05);
+        }
+
+        .kb-preview-text.ovf { justify-content: flex-end; }
+
+        .kb-val { white-space: pre; flex-shrink: 0; }
+        .kb-val.ph { color: #b5a3b0; font-weight: 500; }
+
+        .kb-caret {
+            flex-shrink: 0;
+            width: 2px;
+            height: 1.15em;
+            margin-left: 1px;
+            border-radius: 2px;
+            background: linear-gradient(#ec4899, #a855f7);
+            animation: kbBlink 1s steps(1) infinite;
+        }
+
+        @keyframes kbBlink { 50% { opacity: 0; } }
+
+        .kb-rows { display: flex; flex-direction: column; gap: 7px; }
+        .kb-row { display: flex; gap: 5px; justify-content: center; }
+        .kb-row.num { gap: 7px; }
+
+        .kb-key {
+            flex: 1 1 0;
+            min-width: 0;
+            height: 46px;
+            padding: 0;
+            border: none;
+            border-radius: 14px;
+            font-family: 'Quicksand', sans-serif;
+            font-weight: 700;
+            font-size: 1.12rem;
+            color: #9d174d;
+            background: linear-gradient(180deg, #ffffff 0%, #fdf0f6 100%);
+            box-shadow: 0 2px 0 rgba(236, 72, 153, 0.2), 0 6px 12px rgba(219, 39, 119, 0.08), inset 0 0 0 1px rgba(244, 114, 182, 0.16);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: transform 0.06s ease, background 0.12s ease, color 0.12s ease;
+        }
+
+        .kb-row.num .kb-key { height: 54px; font-size: 1.4rem; }
+
+        .kb-key.fn {
+            background: linear-gradient(180deg, #fde8f3 0%, #f1e6ff 100%);
+            color: #7e22ce;
+            font-size: 0.92rem;
+        }
+
+        .kb-key.w15 { flex: 1.5; }
+        .kb-key.sp { flex: 4.2; font-size: 0.8rem; color: #b27a98; letter-spacing: 0.4px; }
+        .kb-spacer { flex: 0.5; }
+
+        .kb-key.shift.on {
+            background: linear-gradient(135deg, #f9a8d4, #c084fc);
+            color: #ffffff;
+        }
+        .kb-key.shift.on svg { fill: currentColor; }
+        .kb-key.shift.caps { background: linear-gradient(135deg, #ec4899, #a855f7); }
+
+        .kb-key.act {
+            flex: 2.2;
+            font-size: 0.95rem;
+            color: #ffffff;
+            background: linear-gradient(120deg, #f472b6, #ec4899, #a855f7);
+            box-shadow: 0 6px 16px rgba(236, 72, 153, 0.32);
+        }
+
+        .kb-row.num + .kb-row .kb-key.act { height: 48px; }
+
+        .kb-key.pressed {
+            transform: translateY(1px) scale(0.95);
+            background: linear-gradient(135deg, #f472b6, #a855f7);
+            color: #ffffff;
+        }
     </style>
 </head>
 <body>
@@ -813,12 +978,12 @@
             </div>
 
             <form id="txForm" class="input-group">
-                <input type="number" id="amount" placeholder="Nominal (contoh: 25000)" required inputmode="numeric">
+                <input type="text" id="amount" placeholder="Nominal (contoh: 25000)" required readonly inputmode="none" autocomplete="off" data-kb="num" data-label="Nominal">
                 <div class="row-2">
                     <select id="category" required></select>
                     <input type="date" id="date" required>
                 </div>
-                <input type="text" id="note" placeholder="Catatan manis (opsional)">
+                <input type="text" id="note" placeholder="Catatan manis (opsional)" readonly inputmode="none" autocomplete="off" data-kb="text" data-label="Catatan">
                 <button type="submit" class="submit-btn" style="display:flex;align-items:center;justify-content:center;gap:6px;">
                     Simpan Catatan
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
@@ -866,7 +1031,7 @@
                     </svg>
                     Ubah Nama Dompet
                 </label>
-                <input type="text" id="ownerNameInput" class="modal-input" placeholder="Contoh: Cherry Purse">
+                <input type="text" id="ownerNameInput" class="modal-input" placeholder="Contoh: Cherry Purse" readonly inputmode="none" autocomplete="off" data-kb="text" data-label="Nama Dompet">
 
                 <label class="settings-label" for="walletSubtitleInput" style="margin-top: 10px;">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -875,7 +1040,7 @@
                     </svg>
                     Edit Catatan Keuangan
                 </label>
-                <input type="text" id="walletSubtitleInput" class="modal-input" placeholder="Contoh: Catatan keuangan">
+                <input type="text" id="walletSubtitleInput" class="modal-input" placeholder="Contoh: Catatan keuangan" readonly inputmode="none" autocomplete="off" data-kb="text" data-label="Catatan Keuangan">
 
                 <button class="modal-btn modal-confirm" style="width: 100%; margin-top: 4px;" onclick="saveWalletHeaderSettings()">Simpan Perubahan</button>
             </div>
@@ -1082,6 +1247,7 @@
         }
 
         function closeModal() {
+            if (window.closeKb) window.closeKb();
             deleteTargetId = null;
             document.getElementById('confirmModal').classList.remove('active');
         }
@@ -1231,10 +1397,10 @@
             document.getElementById('ownerNameInput').value = walletTitle;
             document.getElementById('walletSubtitleInput').value = walletSubtitle;
             document.getElementById('settingsModal').classList.add('active');
-            setTimeout(() => document.getElementById('ownerNameInput').focus(), 100);
         }
 
         function closeSettingsModal() {
+            if (window.closeKb) window.closeKb();
             document.getElementById('settingsModal').classList.remove('active');
         }
 
@@ -1502,6 +1668,226 @@
         updateCategoryOptions();
         render();
         updateFloatingBalanceVisibility();
+    </script>
+
+    <!-- Keyboard custom (menggantikan keyboard bawaan HP) -->
+    <div id="kbPanel" class="kb-panel" aria-hidden="true">
+        <div class="kb-preview">
+            <span class="kb-preview-label" id="kbLabel"></span>
+            <div class="kb-preview-text" id="kbBox"><span class="kb-val" id="kbVal"></span><span class="kb-caret"></span></div>
+        </div>
+        <div class="kb-rows" id="kbRows"></div>
+    </div>
+
+    <script>
+    (function () {
+        // Cegah menu salin / seleksi teks / drag
+        ['contextmenu', 'selectstart', 'dragstart'].forEach(function (ev) {
+            document.addEventListener(ev, function (e) { e.preventDefault(); });
+        });
+
+        var kb = document.getElementById('kbPanel');
+        var rowsEl = document.getElementById('kbRows');
+        var labelEl = document.getElementById('kbLabel');
+        var boxEl = document.getElementById('kbBox');
+        var valEl = document.getElementById('kbVal');
+
+        var active = null, mode = 'text', layer = 'abc', shift = 0;
+        var lastShiftTap = 0, repT = null, repI = null;
+
+        var ICON_BACK = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"/><line x1="18" y1="9" x2="12" y2="15"/><line x1="12" y1="9" x2="18" y2="15"/></svg>';
+        var ICON_SHIFT = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V6"/><path d="M5 12l7-7 7 7"/></svg>';
+
+        function esc(t) { return t.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;'); }
+        function btn(k, cls, label) {
+            return '<button type="button" class="kb-key ' + cls + '" data-k="' + esc(k) + '" tabindex="-1">' + label + '</button>';
+        }
+        function txt(k, cls) { return btn(k, cls, esc(k)); }
+        function row(inner, extra) { return '<div class="kb-row' + (extra ? ' ' + extra : '') + '">' + inner + '</div>'; }
+
+        function render() {
+            var h = '';
+            if (mode === 'num') {
+                [['1', '2', '3'], ['4', '5', '6'], ['7', '8', '9']].forEach(function (r) {
+                    h += row(r.map(function (k) { return txt(k, 'digit'); }).join(''), 'num');
+                });
+                h += row(btn('000', 'digit fn', '000') + txt('0', 'digit') + btn('back', 'fn', ICON_BACK), 'num');
+                h += row(btn('done', 'act', 'Selesai'));
+            } else {
+                if (layer === 'abc') {
+                    h += row('qwertyuiop'.split('').map(function (l) { return txt(l, 'letter'); }).join(''));
+                    h += row('<span class="kb-spacer"></span>' + 'asdfghjkl'.split('').map(function (l) { return txt(l, 'letter'); }).join('') + '<span class="kb-spacer"></span>');
+                    h += row(btn('shift', 'fn shift w15', ICON_SHIFT) + 'zxcvbnm'.split('').map(function (l) { return txt(l, 'letter'); }).join('') + btn('back', 'fn w15', ICON_BACK));
+                } else {
+                    h += row('1234567890'.split('').map(function (l) { return txt(l, ''); }).join(''));
+                    h += row(['@', '#', '&', '-', '+', '(', ')', '/', '*', '='].map(function (l) { return txt(l, ''); }).join(''));
+                    h += row(['%', '$', '_', '!', '?', ':', ';', '"'].map(function (l) { return txt(l, ''); }).join('') + btn('back', 'fn w15', ICON_BACK));
+                }
+                h += row(
+                    btn('mode', 'fn w15', layer === 'abc' ? '?123' : 'ABC') +
+                    txt(',', '') + btn('space', 'sp', 'spasi') + txt('.', '') +
+                    btn('done', 'act', 'Selesai')
+                );
+            }
+            rowsEl.innerHTML = h;
+            updateLabels();
+        }
+
+        function updateLabels() {
+            rowsEl.querySelectorAll('.letter').forEach(function (b) {
+                b.textContent = shift ? b.dataset.k.toUpperCase() : b.dataset.k;
+            });
+            var s = rowsEl.querySelector('.shift');
+            if (s) {
+                s.classList.toggle('on', shift > 0);
+                s.classList.toggle('caps', shift === 2);
+            }
+        }
+
+        function autoShift() {
+            if (shift === 2 || !active) return;
+            shift = /^$|[.!?]\s$/.test(active.value) ? 1 : 0;
+            updateLabels();
+        }
+
+        function toggleShift() {
+            var now = Date.now();
+            if (shift === 2) shift = 0;
+            else if (shift === 1 && now - lastShiftTap < 350) shift = 2;
+            else shift = shift ? 0 : 1;
+            lastShiftTap = now;
+            updateLabels();
+        }
+
+        function preview() {
+            if (!active) return;
+            var v = active.value;
+            if (!v) {
+                valEl.textContent = active.placeholder || '';
+                valEl.classList.add('ph');
+            } else {
+                valEl.textContent = mode === 'num' ? 'Rp ' + Number(v).toLocaleString('id-ID') : v;
+                valEl.classList.remove('ph');
+            }
+            boxEl.classList.toggle('ovf', valEl.offsetWidth > boxEl.clientWidth - 32);
+        }
+
+        function edit(fn) {
+            if (!active) return;
+            var v = fn(active.value);
+            if (mode === 'num') {
+                v = v.replace(/\D/g, '').replace(/^0+(?=\d)/, '');
+                if (v.length > 13) return;
+            } else if (Array.from(v).length > 100) {
+                return;
+            }
+            active.value = v;
+            active.dispatchEvent(new Event('input', { bubbles: true }));
+            if (mode === 'text' && layer === 'abc') autoShift();
+            preview();
+        }
+
+        function press(k) {
+            if (!active) return;
+            if (k === 'done') { closeKb(); return; }
+            if (k === 'back') { edit(function (v) { return Array.from(v).slice(0, -1).join(''); }); return; }
+            if (k === 'shift') { toggleShift(); return; }
+            if (k === 'mode') { layer = layer === 'abc' ? 'sym' : 'abc'; render(); return; }
+            if (k === 'space') { edit(function (v) { return v + ' '; }); return; }
+            if (mode === 'text' && layer === 'abc' && /^[a-z]$/.test(k)) {
+                var ch = shift ? k.toUpperCase() : k;
+                edit(function (v) { return v + ch; });
+                return;
+            }
+            edit(function (v) { return v + k; });
+        }
+
+        function clearRepeat() { clearTimeout(repT); clearInterval(repI); repT = repI = null; }
+
+        rowsEl.addEventListener('pointerdown', function (e) {
+            var b = e.target.closest('.kb-key');
+            if (!b) return;
+            e.preventDefault();
+            b.classList.add('pressed');
+            var k = b.dataset.k;
+            press(k);
+            if (k === 'back') {
+                repT = setTimeout(function () {
+                    repI = setInterval(function () { press('back'); }, 55);
+                }, 380);
+            }
+            var release = function () {
+                b.classList.remove('pressed');
+                clearRepeat();
+                ['pointerup', 'pointercancel', 'pointerleave'].forEach(function (t) { b.removeEventListener(t, release); });
+            };
+            ['pointerup', 'pointercancel', 'pointerleave'].forEach(function (t) { b.addEventListener(t, release); });
+        });
+
+        kb.addEventListener('mousedown', function (e) { e.preventDefault(); });
+
+        function syncHeight() {
+            document.documentElement.style.setProperty('--kb-h', kb.offsetHeight + 'px');
+        }
+
+        function ensureVisible() {
+            if (!active) return;
+            if (active.closest('.modal-box')) {
+                active.scrollIntoView({ block: 'center', behavior: 'smooth' });
+                return;
+            }
+            var kbTop = window.innerHeight - kb.offsetHeight;
+            var r = active.getBoundingClientRect();
+            var header = document.getElementById('stickyHeader');
+            var hh = header ? header.offsetHeight : 80;
+            if (r.bottom > kbTop - 12) {
+                window.scrollBy({ top: r.bottom - kbTop + 16, behavior: 'smooth' });
+            } else if (r.top < hh + 8) {
+                window.scrollBy({ top: r.top - hh - 12, behavior: 'smooth' });
+            }
+        }
+
+        function openKb(el) {
+            if (active && active !== el) active.classList.remove('kb-active');
+            var newMode = el.dataset.kb === 'num' ? 'num' : 'text';
+            var wasOpen = kb.classList.contains('open');
+            active = el;
+            el.classList.add('kb-active');
+            if (!wasOpen || newMode !== mode) {
+                mode = newMode; layer = 'abc'; shift = 0;
+                render();
+            }
+            labelEl.textContent = el.dataset.label || '';
+            if (mode === 'text') autoShift();
+            preview();
+            kb.classList.add('open');
+            kb.setAttribute('aria-hidden', 'false');
+            document.body.classList.add('kb-open');
+            syncHeight();
+            setTimeout(function () { syncHeight(); ensureVisible(); }, 60);
+            setTimeout(syncHeight, 320);
+        }
+
+        function closeKb() {
+            if (active) active.classList.remove('kb-active');
+            active = null;
+            clearRepeat();
+            kb.classList.remove('open');
+            kb.setAttribute('aria-hidden', 'true');
+            document.body.classList.remove('kb-open');
+            document.documentElement.style.setProperty('--kb-h', '0px');
+        }
+        window.closeKb = closeKb;
+
+        // Ketuk kolom teks -> buka keyboard custom; ketuk di luar -> tutup
+        document.addEventListener('click', function (e) {
+            if (kb.contains(e.target)) return;
+            var el = e.target.closest ? e.target.closest('input[data-kb]') : null;
+            if (el) openKb(el); else closeKb();
+        });
+
+        window.addEventListener('resize', function () { if (kb.classList.contains('open')) syncHeight(); });
+    })();
     </script>
 </body>
 </html>

@@ -64,7 +64,7 @@ jobs:
           copy_icon 144x144 mipmap-xxhdpi
           copy_icon 192x192 mipmap-xxxhdpi
 
-      - name: Aktifkan mode fullscreen (immersive) + simpan CSV ke Download/CherryPurse
+      - name: Aktifkan fullscreen penuh, matikan copy teks & keyboard bawaan, simpan CSV ke Download/CherryPurse
         run: |
           DIR=_build/android/app/src/main/java/com/masrahmat/cherrypurse
           mkdir -p "$DIR"
@@ -75,13 +75,18 @@ jobs:
           import android.content.ContentResolver;
           import android.content.ContentValues;
           import android.content.pm.PackageManager;
+          import android.graphics.Color;
           import android.net.Uri;
           import android.os.Build;
           import android.os.Bundle;
           import android.os.Environment;
+          import android.os.Handler;
+          import android.os.Looper;
           import android.provider.MediaStore;
+          import android.view.View;
           import android.view.WindowManager;
           import android.webkit.JavascriptInterface;
+          import android.webkit.WebView;
 
           import androidx.core.app.ActivityCompat;
           import androidx.core.content.ContextCompat;
@@ -96,9 +101,25 @@ jobs:
           import java.nio.charset.StandardCharsets;
 
           public class MainActivity extends BridgeActivity {
+              private final Handler uiHandler = new Handler(Looper.getMainLooper());
+              private final Runnable hideBars = new Runnable() {
+                  @Override public void run() { applyImmersive(); }
+              };
+
               @Override
+              @SuppressWarnings("deprecation")
               public void onCreate(Bundle savedInstanceState) {
                   super.onCreate(savedInstanceState);
+
+                  // Fullscreen penuh: status bar (sinyal/baterai) & nav bar disembunyikan
+                  getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+                  getWindow().setStatusBarColor(Color.TRANSPARENT);
+                  getWindow().setNavigationBarColor(Color.TRANSPARENT);
+                  // Keyboard bawaan HP tidak dipakai (app punya keyboard sendiri), jangan resize layar
+                  getWindow().setSoftInputMode(
+                      WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN
+                      | WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING);
+
                   if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                       WindowManager.LayoutParams lp = getWindow().getAttributes();
                       lp.layoutInDisplayCutoutMode =
@@ -106,6 +127,18 @@ jobs:
                       getWindow().setAttributes(lp);
                   }
                   applyImmersive();
+
+                  // Kalau bar sempat muncul lagi (dialog tanggal, swipe, dll), sembunyikan otomatis
+                  getWindow().getDecorView().setOnSystemUiVisibilityChangeListener(
+                      new View.OnSystemUiVisibilityChangeListener() {
+                          @Override
+                          public void onSystemUiVisibilityChange(int visibility) {
+                              if ((visibility & View.SYSTEM_UI_FLAG_FULLSCREEN) == 0) {
+                                  uiHandler.removeCallbacks(hideBars);
+                                  uiHandler.postDelayed(hideBars, 1500);
+                              }
+                          }
+                      });
 
                   // Android 9 ke bawah butuh izin storage
                   if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q
@@ -115,7 +148,14 @@ jobs:
                           new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
                   }
 
-                  getBridge().getWebView().addJavascriptInterface(new CsvSaver(), "AndroidSaver");
+                  WebView wv = getBridge().getWebView();
+                  // Matikan tekan-lama (menu salin/seleksi teks)
+                  wv.setLongClickable(false);
+                  wv.setHapticFeedbackEnabled(false);
+                  wv.setOnLongClickListener(new View.OnLongClickListener() {
+                      @Override public boolean onLongClick(View v) { return true; }
+                  });
+                  wv.addJavascriptInterface(new CsvSaver(), "AndroidSaver");
               }
 
               public class CsvSaver {
@@ -157,6 +197,12 @@ jobs:
                   if (hasFocus) applyImmersive();
               }
 
+              @Override
+              public void onResume() {
+                  super.onResume();
+                  applyImmersive();
+              }
+
               private void applyImmersive() {
                   WindowInsetsControllerCompat c =
                       new WindowInsetsControllerCompat(getWindow(), getWindow().getDecorView());
@@ -166,6 +212,13 @@ jobs:
               }
           }
           JAVA
+
+      - name: Paksa tema fullscreen (status bar & nav bar tidak muncul)
+        run: |
+          S=_build/android/app/src/main/res/values/styles.xml
+          sed -i 's#<item name="android:background">@null</item>#<item name="android:background">@null</item>\n        <item name="android:windowFullscreen">true</item>\n        <item name="android:statusBarColor">@android:color/transparent</item>\n        <item name="android:navigationBarColor">@android:color/transparent</item>#' "$S"
+          sed -i 's#<item name="android:background">@drawable/splash</item>#<item name="android:background">@drawable/splash</item>\n        <item name="android:windowFullscreen">true</item>#' "$S"
+          cat "$S"
 
       - name: Tambah izin storage (Android 9 ke bawah)
         run: |

@@ -32,7 +32,7 @@ jobs:
       - name: Install Cordova
         run: npm install -g cordova
 
-      - name: Create Cordova Project & Copy CherryPurse Assets
+      - name: Create Cordova Project, Copy Files & Enable Fullscreen
         run: |
           cordova create cordova-app id.web.masrahmat.cherrypurse "CherryPurse"
           cd cordova-app
@@ -41,45 +41,28 @@ jobs:
           rm -rf www/*
           cp -r ../apps/cherry_purse/* www/
 
-          if [ -f "www/icon.webp" ]; then
-            cp www/icon.webp icon-cherry.webp
+          if [ -f "www/index.html" ]; then
+            cat << 'EOF' >> www/index.html
+<script>
+  (function () {
+    function aktifkanFullscreen() {
+      var el = document.documentElement;
+      if (!document.fullscreenElement && el.requestFullscreen) {
+        el.requestFullscreen().catch(function () {});
+      } else if (!document.webkitFullscreenElement && el.webkitRequestFullscreen) {
+        el.webkitRequestFullscreen();
+      }
+    }
+    document.addEventListener('deviceready', aktifkanFullscreen, false);
+    document.addEventListener('DOMContentLoaded', aktifkanFullscreen, false);
+    document.addEventListener('click', aktifkanFullscreen, false);
+    document.addEventListener('touchstart', aktifkanFullscreen, { passive: true });
+  })();
+</script>
+EOF
           fi
 
-      - name: Configure Cordova config.xml (Fullscreen & index.html Entry)
-        run: |
-          cd cordova-app
-
-          # Suntikkan namespace android agar tidak AttributePrefixUnbound
-          sed -i 's/<widget/<widget xmlns:android="http:\/\/schemas.android.com\/apk\/res\/android"/g' config.xml
-
-          # Halaman utama index.html & Fullscreen
-          sed -i '/<\/widget>/i \    <content src="index.html" \/>' config.xml
-          sed -i '/<\/widget>/i \    <preference name="Fullscreen" value="true" \/>' config.xml
-          sed -i '/<\/widget>/i \    <preference name="KeepRunning" value="true" \/>' config.xml
-
-          if [ -f "icon-cherry.webp" ]; then
-            sed -i '/<\/widget>/i \    <icon src="icon-cherry.webp" \/>' config.xml
-          fi
-
-          # Akses jaringan
-          sed -i '/<\/widget>/i \    <access origin="*" \/>' config.xml
-          sed -i '/<\/widget>/i \    <allow-navigation href="*" \/>' config.xml
-          sed -i '/<\/widget>/i \    <allow-intent href="http:\/\/*\/*" \/>' config.xml
-          sed -i '/<\/widget>/i \    <allow-intent href="https:\/\/*\/*" \/>' config.xml
-
-          # Konfigurasi izin dasar Android
-          cat << 'EOF' > android_permissions.xml
-            <platform name="android">
-                <config-file target="AndroidManifest.xml" parent="/manifest">
-                    <uses-permission android:name="android.permission.INTERNET" />
-                    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-                </config-file>
-            </platform>
-          EOF
-
-          sed -i '/<\/widget>/e cat android_permissions.xml' config.xml
-
-      - name: Build Android APK (Debug Signed)
+      - name: Build Android APK (Debug)
         run: |
           cd cordova-app
           cordova build android --debug -- --packageType=apk

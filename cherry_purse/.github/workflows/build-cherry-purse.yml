@@ -21,41 +21,31 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Setup Java & Android SDK
+      - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
-        env:
-          ANDROID_HOME: /usr/local/lib/android/sdk
 
-      - name: Install ImageMagick (for icon.webp to icon.png)
-        run: sudo apt-get update && sudo apt-get install -y imagemagick
-
-      - name: Install Cordova globally
+      - name: Install Cordova
         run: npm install -g cordova
 
-      - name: Create Cordova project & copy apps/cherry_purse
+      - name: Create Cordova project & copy files
         run: |
           cordova create cordova_app com.masrahmat.cherrypurse CherryPurse
           cd cordova_app
           cordova platform add android
           cordova plugin add cordova-plugin-fullscreen
-
           rm -rf www/*
           cp -r ../apps/cherry_purse/* www/
-
-          if [ -f "www/icon.webp" ]; then
-            convert www/icon.webp -resize 512x512 www/icon.png
-          fi
 
       - name: Write config.xml
         run: |
           cat << 'EOF' > cordova_app/config.xml
           <?xml version='1.0' encoding='utf-8'?>
-          <widget id="com.masrahmat.cherrypurse" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:android="http://schemas.android.com/apk/res/android" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+          <widget id="com.masrahmat.cherrypurse" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
               <name>CherryPurse</name>
-              <description>Aplikasi CherryPurse dari apps/cherry_purse</description>
+              <description>CherryPurse Cordova App</description>
               <author email="masrahmat.id@gmail.com">Mas Rahmat</author>
 
               <content src="index.html" />
@@ -64,10 +54,7 @@ jobs:
 
               <platform name="android">
                   <preference name="Fullscreen" value="true" />
-                  <icon src="www/icon.png" />
-                  <edit-config file="app/src/main/AndroidManifest.xml" mode="merge" target="/manifest/application/activity">
-                      <activity android:theme="@android:style/Theme.DeviceDefault.NoActionBar.Fullscreen" />
-                  </edit-config>
+                  <preference name="KeepRunning" value="true" />
               </platform>
           </widget>
           EOF
@@ -76,10 +63,11 @@ jobs:
         run: |
           cd cordova_app
           cordova prepare android
-          cordova build android
+          cordova build android --debug
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: CherryPurse-debug-apk
-          path: cordova_app/platforms/android/app/build/outputs/apk/debug/app-debug.apk
+          name: CherryPurse-APK
+          path: cordova_app/platforms/android/app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error

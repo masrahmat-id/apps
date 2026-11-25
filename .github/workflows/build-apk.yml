@@ -39,6 +39,7 @@ jobs:
           mkdir -p _build/www
           cp "$APP_DIR/index.html" _build/www/index.html
           cp -r "$APP_DIR/icon" _build/www/icon
+          sed -i 's/<head>/<head><style>*{scrollbar-width:none!important;-ms-overflow-style:none!important;}*::-webkit-scrollbar{display:none!important;width:0!important;height:0!important;}<\/style>/i' _build/www/index.html
           cd _build
           npm init -y
           npm install @capacitor/core@6 @capacitor/cli@6 @capacitor/android@6 @capacitor/filesystem@6 @capacitor/share@6
@@ -151,6 +152,10 @@ jobs:
                   }
 
                   WebView wv = getBridge().getWebView();
+                  // Sembunyikan scrollbar bawaan Android WebView
+                  wv.setOverScrollMode(View.OVER_SCROLL_NEVER);
+                  wv.setVerticalScrollBarEnabled(false);
+                  wv.setHorizontalScrollBarEnabled(false);
                   // Matikan tekan-lama (menu salin/seleksi teks)
                   wv.setLongClickable(false);
                   wv.setHapticFeedbackEnabled(false);
@@ -218,20 +223,25 @@ jobs:
       - name: Paksa tema fullscreen (status bar & nav bar tidak muncul)
         run: |
           S=_build/android/app/src/main/res/values/styles.xml
-          sed -i 's#<item name="android:background">@null</item>#<item name="android:background">@null</item>\n        <item name="android:windowFullscreen">true</item>\n        <item name="android:statusBarColor">@android:color/transparent</item>\n        <item name="android:navigationBarColor">@android:color/transparent</item>#' "$S"
-          sed -i 's#<item name="android:background">@drawable/splash</item>#<item name="android:background">@drawable/splash</item>\n        <item name="android:windowFullscreen">true</item>#' "$S"
+          sed -i 's#<item name="android:background">@null</item>#<item name="android:background">@null</item>
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>#' "$S"
+          sed -i 's#<item name="android:background">@drawable/splash</item>#<item name="android:background">@drawable/splash</item>
+        <item name="android:windowFullscreen">true</item>#' "$S"
           cat "$S"
 
       - name: Tambah izin storage (Android 9 ke bawah)
         run: |
           M=_build/android/app/src/main/AndroidManifest.xml
-          sed -i 's#<application#<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" />\n    <application#' "$M"
+          sed -i 's#<application#<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" />
+    <application#' "$M"
 
       - name: Atur versi aplikasi
         run: |
           F=_build/android/app/build.gradle
           sed -i "s/versionCode 1/versionCode ${{ github.run_number }}/" "$F"
-          sed -i "s/versionName \"1.0\"/versionName \"1.${{ github.run_number }}\"/" "$F"
+          sed -i "s/versionName "1.0"/versionName "1.${{ github.run_number }}"/" "$F"
 
       - name: Pakai keystore tetap (agar update tidak perlu uninstall)
         run: |

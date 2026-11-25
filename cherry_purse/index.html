@@ -7,9 +7,9 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#fffafb">
-     <link rel="icon" type="image/x-icon" href="icon.webp">
-    <title>Cherry Purse - Catatan Keuangan</title>
+    <title>Dompet Milla</title>
     <!-- Google Fonts: Pacifico untuk judul tulisan tangan manis & Quicksand untuk font bulat yang cute -->
+    <link rel="icon" type="image/x-icon" href="icon.webp">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
@@ -709,6 +709,30 @@
             background: #fce7f3;
         }
 
+        .upload-catatan-btn {
+            width: 100%;
+            padding: 12px 16px;
+            margin-top: 8px;
+            border-radius: 50px;
+            border: 1px solid rgba(168, 85, 247, 0.28);
+            background: linear-gradient(120deg, #f3e8ff, #fdf2f8);
+            color: #7e22ce;
+            font-weight: 700;
+            font-size: 0.86rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 12px rgba(168, 85, 247, 0.08);
+            transition: transform 0.15s ease, background 0.2s ease;
+        }
+
+        .upload-catatan-btn:active {
+            transform: scale(0.97);
+            background: #ede9fe;
+        }
+
         .modal-close-btn {
             width: 100%;
             margin-top: 14px;
@@ -744,7 +768,7 @@
     <div class="container">
         <header id="stickyHeader">
             <div class="brand-wrap">
-                <h1 id="appTitle">Cherry Purse</h1>
+                <h1 id="appTitle">Dompet Milla</h1>
                 <span class="brand-subtitle" id="appSubtitle">Catatan keuangan</span>
             </div>
             <div class="header-actions">
@@ -826,7 +850,7 @@
         </div>
     </div>
 
-    <!-- Komponen Modal Pengaturan Nama Dompet, Catatan Keuangan & Download Catatan -->
+    <!-- Komponen Modal Pengaturan Nama Dompet, Catatan Keuangan & Download/Upload CSV -->
     <div id="settingsModal" class="modal-overlay" onclick="if(event.target === this) closeSettingsModal()">
         <div class="modal-box">
             <h3 style="display:flex;align-items:center;justify-content:center;gap:6px;">
@@ -874,6 +898,15 @@
                     </svg>
                     Download Catatan
                 </button>
+                <input type="file" id="csvFileInput" accept=".csv,text/csv" style="display: none;" onchange="handleCSVUpload(event)">
+                <button type="button" class="upload-catatan-btn" onclick="triggerCSVUpload()">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="17 8 12 3 7 8"></polyline>
+                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                    </svg>
+                    Upload Catatan (CSV)
+                </button>
             </div>
 
             <button class="modal-close-btn" onclick="closeSettingsModal()">Tutup</button>
@@ -884,7 +917,7 @@
         let currentType = 'expense';
         let transactions = [];
         let deleteTargetId = null;
-        let walletTitle = 'Cherry Purse';
+        let walletTitle = 'Dompet Milla';
         let walletSubtitle = 'Catatan keuangan';
         let currentPage = 1;
         const ITEMS_PER_PAGE = 5;
@@ -1224,7 +1257,7 @@
         function saveWalletHeaderSettings() {
             const newName = document.getElementById('ownerNameInput').value.trim();
             const newSubtitle = document.getElementById('walletSubtitleInput').value.trim();
-            walletTitle = newName !== '' ? newName : 'Cherry Purse';
+            walletTitle = newName !== '' ? newName : 'Dompet Milla';
             walletSubtitle = newSubtitle !== '' ? newSubtitle : 'Catatan keuangan';
             try {
                 localStorage.setItem('aurora_wallet_title', walletTitle);
@@ -1235,6 +1268,140 @@
             applyWalletTitle();
             closeSettingsModal();
             showToast('Pengaturan berhasil disimpan ✨');
+        }
+
+        function triggerCSVUpload() {
+            const input = document.getElementById('csvFileInput');
+            if (input) {
+                input.value = '';
+                input.click();
+            }
+        }
+
+        function parseCurrencyNumber(rawVal) {
+            if (!rawVal) return 0;
+            const cleaned = String(rawVal).replace(/["']/g, '').trim();
+            if (!cleaned || cleaned === '-') return 0;
+            // Tangani format Indonesia (Rp 25.000 atau -Rp 25.000) dan desimal koma/titik
+            const normalized = cleaned
+                .replace(/rp/gi, '')
+                .replace(/\s+/g, '')
+                .replace(/\./g, '')
+                .replace(/,/g, '.');
+            const num = parseFloat(normalized);
+            return Number.isFinite(num) ? Math.abs(num) : 0;
+        }
+
+        function normalizeDateString(rawDate) {
+            if (!rawDate) return `${yyyy}-${mm}-${dd}`;
+            const str = String(rawDate).replace(/["']/g, '').trim();
+            // Sudah YYYY-MM-DD
+            if (/^\d{4}-\d{2}-\d{2}$/.test(str)) return str;
+            // Format DD/MM/YYYY atau DD-MM-YYYY
+            const dmy = str.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+            if (dmy) {
+                const day = dmy[1].padStart(2, '0');
+                const month = dmy[2].padStart(2, '0');
+                return `${dmy[3]}-${month}-${day}`;
+            }
+            return `${yyyy}-${mm}-${dd}`;
+        }
+
+        function parseCSVLine(line, delimiter) {
+            const result = [];
+            let current = '';
+            let inQuotes = false;
+            for (let i = 0; i < line.length; i++) {
+                const ch = line[i];
+                if (ch === '"') {
+                    inQuotes = !inQuotes;
+                } else if (ch === delimiter && !inQuotes) {
+                    result.push(current.trim());
+                    current = '';
+                } else {
+                    current += ch;
+                }
+            }
+            result.push(current.trim());
+            return result;
+        }
+
+        function handleCSVUpload(event) {
+            const file = event.target.files && event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const text = String(e.target.result || '').replace(/^\uFEFF/, '');
+                    const lines = text.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
+                    if (lines.length < 2) {
+                        showToast('File CSV kosong atau tidak memiliki data.');
+                        return;
+                    }
+
+                    const delimiter = lines[0].includes(';') ? ';' : ',';
+                    const imported = [];
+
+                    for (let i = 1; i < lines.length; i++) {
+                        const cols = parseCSVLine(lines[i], delimiter);
+                        if (cols.length < 5) continue;
+
+                        const col0 = cols[0].trim();
+                        const col1 = cols[1].trim();
+                        const col2 = cols[2].trim();
+                        const col3 = cols[3].trim();
+                        const col4 = cols[4].trim();
+                        const col5 = (cols[5] || '').trim();
+
+                        // Lewati baris total keseluruhan dari ekspor CSV
+                        if (/total keseluruhan/i.test(col2) || /total keseluruhan/i.test(col1) || !col0 || !/^\d+$/.test(col0)) {
+                            continue;
+                        }
+
+                        const dateNorm = normalizeDateString(col1);
+                        const category = col2 || 'Lainnya';
+                        const note = col3 === '-' ? '' : col3;
+                        const inAmount = parseCurrencyNumber(col4);
+                        const outAmount = parseCurrencyNumber(col5);
+
+                        if (inAmount > 0) {
+                            imported.push({
+                                id: Date.now() + i,
+                                type: 'income',
+                                amount: inAmount,
+                                category,
+                                date: dateNorm,
+                                note
+                            });
+                        } else if (outAmount > 0) {
+                            imported.push({
+                                id: Date.now() + i,
+                                type: 'expense',
+                                amount: outAmount,
+                                category,
+                                date: dateNorm,
+                                note
+                            });
+                        }
+                    }
+
+                    if (imported.length === 0) {
+                        showToast('Tidak ada catatan transaksi valid ditemukan di CSV.');
+                        return;
+                    }
+
+                    transactions = [...imported, ...transactions];
+                    saveData();
+                    currentPage = 1;
+                    render();
+                    closeSettingsModal();
+                    showToast(`${imported.length} catatan CSV berhasil diupload ✨`);
+                } catch (err) {
+                    showToast('Gagal membaca file CSV.');
+                }
+            };
+            reader.readAsText(file, 'UTF-8');
         }
 
         // Ekspor data ke file CSV dengan kolom terpisah rapi & lebar disesuaikan

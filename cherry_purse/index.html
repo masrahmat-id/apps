@@ -9,7 +9,7 @@
     <meta name="theme-color" content="#fffafb">
     <title>Cherry Purse</title>
     <!-- Google Fonts: Pacifico untuk judul tulisan tangan manis & Quicksand untuk font bulat yang cute -->
-    <link rel="icon" type="image/png" href="icon/Icon%20Cherry%20Purse-192x192.png">
+    <link rel="icon" type="image/x-icon" href="icon.webp">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
@@ -745,18 +745,6 @@
             font-size: 0.84rem;
             cursor: pointer;
         }
-        /* Aplikasi mode native: teks tidak bisa diseleksi / disalin (kolom input tetap bisa diketik) */
-        html, body, body * {
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            user-select: none;
-            -webkit-touch-callout: none;
-        }
-        input, textarea, select {
-            -webkit-user-select: text;
-            user-select: text;
-        }
-        img { -webkit-user-drag: none; }
     </style>
 </head>
 <body>
@@ -1488,42 +1476,24 @@
 
             // Tambahkan UTF-8 BOM (\uFEFF) agar Excel mengenali encoding & pemisah kolom dengan sempurna
             const csvContent = '\uFEFF' + csvLines.join('\r\n');
-            const safeFileName = (walletTitle.replace(/[^a-zA-Z0-9_-]/g, '_') || 'Catatan');
+            const safeFileName = walletTitle.replace(/[^a-zA-Z0-9_-]/g, '_');
             const fileName = `${safeFileName}_${new Date().toISOString().slice(0,10)}.csv`;
-            closeSettingsModal();
 
-            // Mode aplikasi Android (Capacitor): WebView tidak mendukung download blob,
-            // jadi file ditulis lewat plugin Filesystem lalu dibagikan/disimpan lewat Share.
-            const cap = window.Capacitor;
-            const isNative = cap && typeof cap.isNativePlatform === 'function' && cap.isNativePlatform();
-            if (isNative && cap.Plugins && cap.Plugins.Filesystem && cap.Plugins.Share) {
-                cap.Plugins.Filesystem.writeFile({
-                    path: fileName,
-                    data: csvContent,
-                    directory: 'CACHE',
-                    encoding: 'utf8'
-                }).then(function(res) {
-                    return cap.Plugins.Share.share({
-                        title: fileName,
-                        text: 'Catatan keuangan Cherry Purse',
-                        url: res.uri,
-                        dialogTitle: 'Simpan / kirim catatan'
-                    });
-                }).then(function() {
-                    showToast('Catatan CSV siap disimpan ✨');
-                }).catch(function(err) {
-                    if (err && /cancel/i.test(String(err.message || err))) return;
-                    showToast('Gagal menyimpan file CSV.');
-                });
+            // Di aplikasi APK: simpan otomatis ke Download/CherryPurse
+            if (window.AndroidSaver && window.AndroidSaver.saveCsv) {
+                const ok = window.AndroidSaver.saveCsv(fileName, csvContent);
+                closeSettingsModal();
+                showToast(ok ? 'Tersimpan di Download/CherryPurse ✨' : 'Gagal menyimpan file CSV.');
                 return;
             }
 
-            // Mode browser biasa
+            // Fallback untuk browser biasa
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
             link.download = fileName;
             link.click();
+            closeSettingsModal();
             showToast('Download Catatan CSV berhasil ✨');
         }
 
@@ -1532,22 +1502,6 @@
         updateCategoryOptions();
         render();
         updateFloatingBalanceVisibility();
-    </script>
-    <script>
-        // Cegah salin teks, menu klik-lama, seleksi & drag (kolom input tetap bisa diketik)
-        (function() {
-            function isEditable(t) {
-                return t && t.closest && t.closest('input, textarea, select, [contenteditable="true"]');
-            }
-            ['copy', 'cut'].forEach(function(ev) {
-                document.addEventListener(ev, function(e) { e.preventDefault(); });
-            });
-            ['contextmenu', 'selectstart', 'dragstart'].forEach(function(ev) {
-                document.addEventListener(ev, function(e) {
-                    if (!isEditable(e.target)) e.preventDefault();
-                });
-            });
-        })();
     </script>
 </body>
 </html>

@@ -7,7 +7,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#fffafb">
-    <title>Dompet Milla</title>
+    <title>Cherry Purse</title>
     <!-- Google Fonts: Pacifico untuk judul tulisan tangan manis & Quicksand untuk font bulat yang cute -->
     <link rel="icon" type="image/x-icon" href="icon.webp">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -768,7 +768,7 @@
     <div class="container">
         <header id="stickyHeader">
             <div class="brand-wrap">
-                <h1 id="appTitle">Dompet Milla</h1>
+                <h1 id="appTitle">Cherry Purse</h1>
                 <span class="brand-subtitle" id="appSubtitle">Catatan keuangan</span>
             </div>
             <div class="header-actions">
@@ -866,7 +866,7 @@
                     </svg>
                     Ubah Nama Dompet
                 </label>
-                <input type="text" id="ownerNameInput" class="modal-input" placeholder="Contoh: Dompet Milla">
+                <input type="text" id="ownerNameInput" class="modal-input" placeholder="Contoh: Cherry Purse">
 
                 <label class="settings-label" for="walletSubtitleInput" style="margin-top: 10px;">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -917,7 +917,7 @@
         let currentType = 'expense';
         let transactions = [];
         let deleteTargetId = null;
-        let walletTitle = 'Dompet Milla';
+        let walletTitle = 'Cherry Purse';
         let walletSubtitle = 'Catatan keuangan';
         let currentPage = 1;
         const ITEMS_PER_PAGE = 5;
@@ -1257,7 +1257,7 @@
         function saveWalletHeaderSettings() {
             const newName = document.getElementById('ownerNameInput').value.trim();
             const newSubtitle = document.getElementById('walletSubtitleInput').value.trim();
-            walletTitle = newName !== '' ? newName : 'Dompet Milla';
+            walletTitle = newName !== '' ? newName : 'Cherry Purse';
             walletSubtitle = newSubtitle !== '' ? newSubtitle : 'Catatan keuangan';
             try {
                 localStorage.setItem('aurora_wallet_title', walletTitle);

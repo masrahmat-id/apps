@@ -1,0 +1,143 @@
+name: Build APK Cherry Purse
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'cherry_purse/**'
+      - '.github/workflows/build-apk.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  APP_DIR: cherry_purse
+  APP_NAME: Cherry Purse
+  APP_ID: com.masrahmat.cherrypurse
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Siapkan project Capacitor
+        run: |
+          mkdir -p _build/www
+          cp "$APP_DIR/index.html" _build/www/index.html
+          cp -r "$APP_DIR/icon" _build/www/icon
+          cd _build
+          npm init -y
+          npm install @capacitor/core@6 @capacitor/cli@6 @capacitor/android@6 @capacitor/filesystem@6 @capacitor/share@6
+          npx cap init "$APP_NAME" "$APP_ID" --web-dir=www
+          npx cap add android
+          npx cap sync android
+
+      - name: Pasang ikon aplikasi
+        run: |
+          RES=_build/android/app/src/main/res
+          ICON="$APP_DIR/icon"
+          rm -rf "$RES/mipmap-anydpi-v26"
+          copy_icon() {
+            mkdir -p "$RES/$2"
+            cp "$ICON/Icon Cherry Purse-$1.png" "$RES/$2/ic_launcher.png"
+            cp "$ICON/Icon Cherry Purse-$1.png" "$RES/$2/ic_launcher_round.png"
+            cp "$ICON/Icon Cherry Purse-$1.png" "$RES/$2/ic_launcher_foreground.png"
+          }
+          copy_icon 36x36   mipmap-ldpi
+          copy_icon 48x48   mipmap-mdpi
+          copy_icon 72x72   mipmap-hdpi
+          copy_icon 96x96   mipmap-xhdpi
+          copy_icon 144x144 mipmap-xxhdpi
+          copy_icon 192x192 mipmap-xxxhdpi
+
+      - name: Aktifkan mode fullscreen (immersive)
+        run: |
+          DIR=_build/android/app/src/main/java/com/masrahmat/cherrypurse
+          mkdir -p "$DIR"
+          cat > "$DIR/MainActivity.java" <<'JAVA'
+          package com.masrahmat.cherrypurse;
+
+          import android.os.Build;
+          import android.os.Bundle;
+          import android.view.WindowManager;
+
+          import androidx.core.view.WindowInsetsCompat;
+          import androidx.core.view.WindowInsetsControllerCompat;
+
+          import com.getcapacitor.BridgeActivity;
+
+          public class MainActivity extends BridgeActivity {
+              @Override
+              public void onCreate(Bundle savedInstanceState) {
+                  super.onCreate(savedInstanceState);
+                  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                      WindowManager.LayoutParams lp = getWindow().getAttributes();
+                      lp.layoutInDisplayCutoutMode =
+                          WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
+                      getWindow().setAttributes(lp);
+                  }
+                  applyImmersive();
+              }
+
+              @Override
+              public void onWindowFocusChanged(boolean hasFocus) {
+                  super.onWindowFocusChanged(hasFocus);
+                  if (hasFocus) applyImmersive();
+              }
+
+              private void applyImmersive() {
+                  WindowInsetsControllerCompat c =
+                      new WindowInsetsControllerCompat(getWindow(), getWindow().getDecorView());
+                  c.setSystemBarsBehavior(
+                      WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+                  c.hide(WindowInsetsCompat.Type.systemBars());
+              }
+          }
+          JAVA
+
+      - name: Atur versi aplikasi
+        run: |
+          F=_build/android/app/build.gradle
+          sed -i "s/versionCode 1/versionCode ${{ github.run_number }}/" "$F"
+          sed -i "s/versionName \"1.0\"/versionName \"1.${{ github.run_number }}\"/" "$F"
+
+      - name: Pakai keystore tetap (agar update tidak perlu uninstall)
+        run: |
+          mkdir -p ~/.android
+          cp "$APP_DIR/debug.keystore" ~/.android/debug.keystore
+
+      - name: Build APK
+        working-directory: _build/android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
+
+      - name: Ganti nama APK
+        run: cp _build/android/app/build/outputs/apk/debug/app-debug.apk Cherry-Purse.apk
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Cherry-Purse-APK
+          path: Cherry-Purse.apk
+
+      - name: Publish ke GitHub Releases
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.${{ github.run_number }}
+          name: Cherry Purse v1.${{ github.run_number }}
+          files: Cherry-Purse.apk

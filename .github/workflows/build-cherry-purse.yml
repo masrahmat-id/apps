@@ -1,8 +1,9 @@
-name: Build CherryPurse APK
+name: Build Android APK (CherryPurse)
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
@@ -10,49 +11,83 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
+      - name: Checkout Source Code
+        uses: actions/checkout@v3
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
         with:
-          node-version: '20'
+          node-cache: 'npm'
+          node-version: 18
 
-      - name: Setup Java 17
-        uses: actions/setup-java@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
         with:
-          distribution: 'temurin'
+          distribution: 'zulu'
           java-version: '17'
 
-      - name: Build Cordova Android
+      - name: Install Android SDK
+        uses: android-actions/setup-android@v4
+
+      - name: Install Cordova
+        run: npm install -g cordova
+
+      - name: Create Cordova Project & Copy CherryPurse Assets
         run: |
-          npm install -g cordova
-          cordova create cherry_app com.masrahmat.cherrypurse CherryPurse
-          cd cherry_app
+          cordova create cordova-app id.web.masrahmat.cherrypurse "CherryPurse"
+          cd cordova-app
           cordova platform add android
-          cordova plugin add cordova-plugin-fullscreen
+
           rm -rf www/*
           cp -r ../apps/cherry_purse/* www/
-          cat << 'EOF' > config.xml
-          <?xml version='1.0' encoding='utf-8'?>
-          <widget id="com.masrahmat.cherrypurse" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
-              <name>CherryPurse</name>
-              <content src="index.html" />
-              <allow-intent href="http://*/*" />
-              <allow-intent href="https://*/*" />
-              <platform name="android">
-                  <preference name="Fullscreen" value="true" />
-              </platform>
-          </widget>
-          EOF
-          cordova prepare android
-          cordova build android --debug
-          echo "=== DAFTAR APK HASIL BUILD ==="
-          find platforms/android -type f -name "*.apk"
 
-      - name: Upload hasil APK
+          if [ -f "www/icon.webp" ]; then
+            cp www/icon.webp icon-cherry.webp
+          fi
+
+      - name: Configure Cordova config.xml (Fullscreen & index.html Entry)
+        run: |
+          cd cordova-app
+
+          # Suntikkan namespace android agar tidak AttributePrefixUnbound
+          sed -i 's/<widget/<widget xmlns:android="http:\/\/schemas.android.com\/apk\/res\/android"/g' config.xml
+
+          # Halaman utama index.html & Fullscreen
+          sed -i '/<\/widget>/i \    <content src="index.html" \/>' config.xml
+          sed -i '/<\/widget>/i \    <preference name="Fullscreen" value="true" \/>' config.xml
+          sed -i '/<\/widget>/i \    <preference name="KeepRunning" value="true" \/>' config.xml
+
+          if [ -f "icon-cherry.webp" ]; then
+            sed -i '/<\/widget>/i \    <icon src="icon-cherry.webp" \/>' config.xml
+          fi
+
+          # Akses jaringan
+          sed -i '/<\/widget>/i \    <access origin="*" \/>' config.xml
+          sed -i '/<\/widget>/i \    <allow-navigation href="*" \/>' config.xml
+          sed -i '/<\/widget>/i \    <allow-intent href="http:\/\/*\/*" \/>' config.xml
+          sed -i '/<\/widget>/i \    <allow-intent href="https:\/\/*\/*" \/>' config.xml
+
+          # Konfigurasi izin dasar Android
+          cat << 'EOF' > android_permissions.xml
+            <platform name="android">
+                <config-file target="AndroidManifest.xml" parent="/manifest">
+                    <uses-permission android:name="android.permission.INTERNET" />
+                    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+                </config-file>
+            </platform>
+          EOF
+
+          sed -i '/<\/widget>/e cat android_permissions.xml' config.xml
+
+      - name: Build Android APK (Debug Signed)
+        run: |
+          cd cordova-app
+          cordova build android --debug -- --packageType=apk
+
+      - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: CherryPurse-Debug-APK
-          path: cherry_app/platforms/android/app/build/outputs/apk/debug/*.apk
+          name: cherry-purse-debug-apk
+          path: cordova-app/platforms/android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
+          retention-days: 1

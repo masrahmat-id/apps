@@ -9,7 +9,7 @@
     <meta name="theme-color" content="#fffafb">
     <title>Cherry Purse</title>
     <!-- Google Fonts: Pacifico untuk judul tulisan tangan manis & Quicksand untuk font bulat yang cute -->
-    <link rel="icon" type="image/x-icon" href="icon.webp">
+    <link rel="icon" type="image/x-icon" href="/icon/Icon Cherry Purse-96x96.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
@@ -1199,22 +1199,6 @@
             }
         }
 
-        // Mode layar penuh otomatis saat klik/tap di mana saja pada layar
-        function triggerAutoFullScreen() {
-            if (!document.fullscreenElement) {
-                const docEl = document.documentElement;
-                if (docEl.requestFullscreen) {
-                    docEl.requestFullscreen().catch(() => {});
-                } else if (docEl.webkitRequestFullscreen) {
-                    docEl.webkitRequestFullscreen();
-                }
-            }
-        }
-
-        document.addEventListener('click', function() {
-            triggerAutoFullScreen();
-        }, { passive: true });
-
         // Sesuaikan posisi top floating balance agar selalu tepat di bawah header sticky
         function updateFloatingBalancePosition() {
             const headerEl = document.getElementById('stickyHeader');
@@ -1333,8 +1317,10 @@
             const reader = new FileReader();
             reader.onload = function(e) {
                 try {
-                    const text = String(e.target.result || '').replace(/^\uFEFF/, '');
-                    const lines = text.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
+                    const text = String(e.target.result || '').replace(/^﻿/, '');
+                    const lines = text.split(/
+?
+/).map(l => l.trim()).filter(l => l.length > 0);
                     if (lines.length < 2) {
                         showToast('File CSV kosong atau tidak memiliki data.');
                         return;
@@ -1427,8 +1413,10 @@
             let totalOut = 0;
 
             sortedTx.forEach((t, index) => {
-                const cleanCategory = (t.category || '').replace(/[";\r\n]+/g, ' ').trim();
-                const cleanNote = (t.note || '-').replace(/[";\r\n]+/g, ' ').trim();
+                const cleanCategory = (t.category || '').replace(/[";
+]+/g, ' ').trim();
+                const cleanNote = (t.note || '-').replace(/[";
+]+/g, ' ').trim();
                 
                 let inStr = '-';
                 let outStr = '-';
@@ -1490,8 +1478,9 @@
                 }).join(';');
             });
 
-            // Tambahkan UTF-8 BOM (\uFEFF) agar Excel mengenali encoding & pemisah kolom dengan sempurna
-            const csvContent = '\uFEFF' + csvLines.join('\r\n');
+            // Tambahkan UTF-8 BOM (﻿) agar Excel mengenali encoding & pemisah kolom dengan sempurna
+            const csvContent = '﻿' + csvLines.join('
+');
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);

@@ -38,6 +38,11 @@
             -webkit-tap-highlight-color: transparent;
         }
 
+        html, body {
+            overscroll-behavior: none;
+            overscroll-behavior-y: none;
+        }
+
         body {
             background-color: var(--bg-main);
             color: var(--text-main);
@@ -93,34 +98,28 @@
         .container {
             max-width: 480px;
             margin: 0 auto;
-            padding: 0 18px 24px 18px;
+            padding: calc(88px + env(safe-area-inset-top, 0px)) 18px 24px 18px;
         }
 
-        /* Header dengan Tipografi Editorial Cantik (Sticky agar tidak ikut naik saat scroll) */
-    header {
-    position: fixed;
-    top: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 100%;
-    max-width: 480px;
-    z-index: 950;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: calc(18px + env(safe-area-inset-top, 0px)) 18px 14px 18px;
-    margin: 0;
-    background: rgba(255, 250, 251, 0.85);
-    backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
-    border-bottom: 1px solid rgba(244, 114, 182, 0.12);
-}
-
-.container {
-    max-width: 480px;
-    margin: 0 auto;
-    padding: 88px 18px 24px 18px;
-}
+        /* Header dengan Tipografi Editorial Cantik (Fixed agar tidak ikut ketarik saat scroll) */
+        header {
+            position: fixed;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 480px;
+            z-index: 950;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 18px 18px 14px 18px;
+            margin: 0;
+            background: rgba(255, 250, 251, 0.85);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border-bottom: 1px solid rgba(244, 114, 182, 0.12);
+        }
 
         .brand-wrap {
             display: flex;
@@ -761,11 +760,6 @@
             padding-top: calc(18px + env(safe-area-inset-top, 0px));
         }
 
-        html, body {
-            overscroll-behavior-y: none;
-            overscroll-behavior: none;
-        }
-
         html, body, * {
             -webkit-user-select: none;
             user-select: none;
@@ -1380,7 +1374,7 @@
             }
         }
 
-        // Sesuaikan posisi top floating balance agar selalu tepat di bawah header sticky
+        // Sesuaikan posisi top floating balance agar selalu tepat di bawah header
         function updateFloatingBalancePosition() {
             const headerEl = document.getElementById('stickyHeader');
             const floatingBar = document.getElementById('floatingBalanceBar');
@@ -1389,7 +1383,7 @@
             floatingBar.style.top = (headerHeight + 10) + 'px';
         }
 
-        // Tampilkan sisa saldo mengambang bergradien saat kartu saldo utama terlewat scroll di bawah header sticky
+        // Tampilkan sisa saldo mengambang bergradien saat kartu saldo utama terlewat scroll di bawah header
         function updateFloatingBalanceVisibility() {
             const headerEl = document.getElementById('stickyHeader');
             const balanceCard = document.querySelector('.balance-card');

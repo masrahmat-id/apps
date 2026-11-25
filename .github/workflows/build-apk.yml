@@ -152,8 +152,8 @@ jobs:
                   }
 
                   WebView wv = getBridge().getWebView();
-                  // Sembunyikan scrollbar bawaan Android WebView
                   wv.setOverScrollMode(View.OVER_SCROLL_NEVER);
+                  // Sembunyikan scrollbar bawaan Android WebView
                   wv.setVerticalScrollBarEnabled(false);
                   wv.setHorizontalScrollBarEnabled(false);
                   // Matikan tekan-lama (menu salin/seleksi teks)

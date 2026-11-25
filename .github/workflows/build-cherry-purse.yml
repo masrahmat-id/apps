@@ -1,0 +1,58 @@
+name: Build CherryPurse APK
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Build Cordova Android
+        run: |
+          npm install -g cordova
+          cordova create cherry_app com.masrahmat.cherrypurse CherryPurse
+          cd cherry_app
+          cordova platform add android
+          cordova plugin add cordova-plugin-fullscreen
+          rm -rf www/*
+          cp -r ../apps/cherry_purse/* www/
+          cat << 'EOF' > config.xml
+          <?xml version='1.0' encoding='utf-8'?>
+          <widget id="com.masrahmat.cherrypurse" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+              <name>CherryPurse</name>
+              <content src="index.html" />
+              <allow-intent href="http://*/*" />
+              <allow-intent href="https://*/*" />
+              <platform name="android">
+                  <preference name="Fullscreen" value="true" />
+              </platform>
+          </widget>
+          EOF
+          cordova prepare android
+          cordova build android --debug
+          echo "=== DAFTAR APK HASIL BUILD ==="
+          find platforms/android -type f -name "*.apk"
+
+      - name: Upload hasil APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: CherryPurse-Debug-APK
+          path: cherry_app/platforms/android/app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error

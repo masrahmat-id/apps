@@ -39,7 +39,7 @@ jobs:
           mkdir -p _build/www
           cp "$APP_DIR/index.html" _build/www/index.html
           cp -r "$APP_DIR/icon" _build/www/icon
-          sed -i 's/<head>/<head><style>*{scrollbar-width:none!important;-ms-overflow-style:none!important;}*::-webkit-scrollbar{display:none!important;width:0!important;height:0!important;}<\/style>/i' _build/www/index.html
+          sed -i 's/<head>/<head><style>*{scrollbar-width:none!important;-ms-overflow-style:none!important;}*::-webkit-scrollbar{display:none!important;width:0!important;height:0!important;}<\/style>/I' _build/www/index.html
           cd _build
           npm init -y
           npm install @capacitor/core@6 @capacitor/cli@6 @capacitor/android@6 @capacitor/filesystem@6 @capacitor/share@6
@@ -53,10 +53,12 @@ jobs:
           ICON="$APP_DIR/icon"
           rm -rf "$RES/mipmap-anydpi-v26"
           copy_icon() {
+            SRC="$ICON/Icon Cherry Purse-$1.png"
+            if [ ! -f "$SRC" ]; then echo "Ikon tidak ditemukan: $SRC"; ls -la "$ICON"; exit 1; fi
             mkdir -p "$RES/$2"
-            cp "$ICON/Icon Cherry Purse-$1.png" "$RES/$2/ic_launcher.png"
-            cp "$ICON/Icon Cherry Purse-$1.png" "$RES/$2/ic_launcher_round.png"
-            cp "$ICON/Icon Cherry Purse-$1.png" "$RES/$2/ic_launcher_foreground.png"
+            cp "$SRC" "$RES/$2/ic_launcher.png"
+            cp "$SRC" "$RES/$2/ic_launcher_round.png"
+            cp "$SRC" "$RES/$2/ic_launcher_foreground.png"
           }
           copy_icon 36x36   mipmap-ldpi
           copy_icon 48x48   mipmap-mdpi
@@ -65,7 +67,7 @@ jobs:
           copy_icon 144x144 mipmap-xxhdpi
           copy_icon 192x192 mipmap-xxxhdpi
 
-      - name: Aktifkan fullscreen penuh, matikan copy teks & keyboard bawaan, simpan CSV ke Download/CherryPurse
+      - name: Tulis MainActivity (fullscreen, keyboard custom, simpan CSV ke Download/CherryPurse)
         run: |
           DIR=_build/android/app/src/main/java/com/masrahmat/cherrypurse
           mkdir -p "$DIR"
@@ -220,28 +222,44 @@ jobs:
           }
           JAVA
 
-      - name: Paksa tema fullscreen (status bar & nav bar tidak muncul)
+      - name: Patch tema fullscreen, izin storage, dan versi
         run: |
-          S=_build/android/app/src/main/res/values/styles.xml
-          sed -i 's#<item name="android:background">@null</item>#<item name="android:background">@null</item>
-        <item name="android:windowFullscreen">true</item>
-        <item name="android:statusBarColor">@android:color/transparent</item>
-        <item name="android:navigationBarColor">@android:color/transparent</item>#' "$S"
-          sed -i 's#<item name="android:background">@drawable/splash</item>#<item name="android:background">@drawable/splash</item>
-        <item name="android:windowFullscreen">true</item>#' "$S"
-          cat "$S"
+          cat > _build/patch.py <<'PY'
+          import re, sys
+          base = "_build/android/app/src/main"
 
-      - name: Tambah izin storage (Android 9 ke bawah)
-        run: |
-          M=_build/android/app/src/main/AndroidManifest.xml
-          sed -i 's#<application#<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" />
-    <application#' "$M"
+          # styles.xml -> fullscreen
+          p = base + "/res/values/styles.xml"
+          s = open(p, encoding="utf-8").read()
+          extra = ('\n        <item name="android:windowFullscreen">true</item>'
+                   '\n        <item name="android:statusBarColor">@android:color/transparent</item>'
+                   '\n        <item name="android:navigationBarColor">@android:color/transparent</item>')
+          s = s.replace('<item name="android:background">@null</item>',
+                        '<item name="android:background">@null</item>' + extra, 1)
+          s = s.replace('<item name="android:background">@drawable/splash</item>',
+                        '<item name="android:background">@drawable/splash</item>'
+                        '\n        <item name="android:windowFullscreen">true</item>', 1)
+          open(p, "w", encoding="utf-8").write(s)
+          print(s)
 
-      - name: Atur versi aplikasi
-        run: |
-          F=_build/android/app/build.gradle
-          sed -i "s/versionCode 1/versionCode ${{ github.run_number }}/" "$F"
-          sed -i "s/versionName "1.0"/versionName "1.${{ github.run_number }}"/" "$F"
+          # AndroidManifest.xml -> izin storage Android 9 ke bawah
+          p = base + "/AndroidManifest.xml"
+          s = open(p, encoding="utf-8").read()
+          if "WRITE_EXTERNAL_STORAGE" not in s:
+              perm = '<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" />\n    '
+              s = s.replace("<application", perm + "<application", 1)
+          open(p, "w", encoding="utf-8").write(s)
+
+          # build.gradle -> versi
+          run = sys.argv[1]
+          p = "_build/android/app/build.gradle"
+          s = open(p, encoding="utf-8").read()
+          s = re.sub(r"versionCode\s+\d+", "versionCode " + run, s, count=1)
+          s = re.sub(r'versionName\s+"[^"]*"', 'versionName "1.' + run + '"', s, count=1)
+          open(p, "w", encoding="utf-8").write(s)
+          print("Patch selesai")
+          PY
+          python3 _build/patch.py "${{ github.run_number }}"
 
       - name: Pakai keystore tetap (agar update tidak perlu uninstall)
         run: |
@@ -252,7 +270,7 @@ jobs:
         working-directory: _build/android
         run: |
           chmod +x gradlew
-          ./gradlew assembleDebug --no-daemon
+          ./gradlew assembleDebug --no-daemon --stacktrace
 
       - name: Ganti nama APK
         run: cp _build/android/app/build/outputs/apk/debug/app-debug.apk Cherry-Purse.apk
